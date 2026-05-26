@@ -1,0 +1,25 @@
+.tb-section {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 24px 0 12px;
+}
+
+.tb-section__main {
+  min-width: 0;
+}
+
+.tb-section__title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--tb-text-strong);
+  margin: 0;
+}
+
+.tb-section__subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--tb-text-muted);
+}
