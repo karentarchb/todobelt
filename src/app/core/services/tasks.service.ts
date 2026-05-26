@@ -1,125 +1,226 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { NewTaskInput, Task } from '../models';
-import { uid } from '../helpers/id.helper';
-import { TASK_REWARD } from '../constants/app.constants';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
+
+import { NewTaskInput, Task, TaskPriority, TaskTemplate } from '../models';
+import {
+  DAILY_COIN_CAP,
+  DUE_BONUS_MINUTES,
+  MIN_ELAPSED_MINUTES,
+  TASK_REWARD,
+} from '../constants/app.constants';
+import { TASK_TEMPLATES } from '../constants/task-templates.constants';
+import { AuthService } from './auth.service';
+import { FirestoreTasksService } from './firestore-tasks.service';
 import { WalletService } from './wallet.service';
 
-const seed = (): Task[] => {
-  const now = new Date();
-  const iso = (offsetH: number) =>
-    new Date(now.getTime() + offsetH * 3_600_000).toISOString();
+export type ToggleReason =
+  | 'ok'        // full reward granted
+  | 'partial'   // reward granted but clipped by daily cap
+  | 'too-fast'  // completed before MIN_ELAPSED_MINUTES → no coins
+  | 'late'      // 24h+ past due → no coins
+  | 'capped'    // daily cap already met → no coins
+  | 'undo';     // toggled back to pending (no feedback)
 
-  return [
-    {
-      id: uid('t'),
-      title: 'Revisar correos importantes',
-      category: 'work',
-      priority: 'medium',
-      reward: TASK_REWARD.medium,
-      createdAt: iso(-3),
-      dueAt: iso(2),
-      done: false,
-    },
-    {
-      id: uid('t'),
-      title: 'Caminar 20 minutos',
-      notes: 'Sin auriculares, solo respirar.',
-      category: 'health',
-      priority: 'low',
-      reward: TASK_REWARD.low,
-      createdAt: iso(-5),
-      dueAt: iso(4),
-      done: false,
-    },
-    {
-      id: uid('t'),
-      title: 'Avanzar diseño TODO BELT',
-      category: 'creative',
-      priority: 'high',
-      reward: TASK_REWARD.high,
-      createdAt: iso(-1),
-      dueAt: iso(6),
-      done: false,
-    },
-    {
-      id: uid('t'),
-      title: 'Beber 2 vasos de agua',
-      category: 'health',
-      priority: 'low',
-      reward: TASK_REWARD.low,
-      createdAt: iso(-2),
-      dueAt: iso(1),
-      done: true,
-      completedAt: iso(-0.5),
-    },
-  ];
-};
+export interface ToggleResult {
+  earned: number;
+  reason: ToggleReason;
+  /** Minutes remaining until the task qualifies, when reason === 'too-fast'. */
+  waitMinutes?: number;
+}
 
 @Injectable({ providedIn: 'root' })
 export class TasksService {
+  private readonly auth = inject(AuthService);
+  private readonly fsTasks = inject(FirestoreTasksService);
   private readonly wallet = inject(WalletService);
 
-  private readonly _tasks = signal<Task[]>(seed());
+  private readonly _tasks = signal<Task[]>([]);
+  private readonly _loading = signal(false);
+  private unsubscribe: (() => void) | null = null;
 
   readonly tasks = computed(() => this._tasks());
+  readonly loading = computed(() => this._loading());
   readonly pending = computed(() => this._tasks().filter((t) => !t.done));
   readonly completed = computed(() => this._tasks().filter((t) => t.done));
-
   readonly todayPending = computed(() =>
     this.pending().slice().sort(this.byPriority),
   );
-
   readonly progress = computed(() => {
     const total = this._tasks().length;
     if (!total) return 0;
     return Math.round((this.completed().length / total) * 100);
   });
 
-  add(input: NewTaskInput): Task {
+  /** Coins earned today (rolling, computed from wallet history). */
+  readonly todayEarned = computed(() => {
+    const start = this.startOfTodayMs();
+    return this.wallet
+      .state()
+      .history.filter((tx) => tx.kind === 'earn' && new Date(tx.at).getTime() >= start)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  });
+
+  readonly dailyCap = DAILY_COIN_CAP;
+  readonly templates: TaskTemplate[] = TASK_TEMPLATES;
+
+  constructor() {
+    // React to auth changes: subscribe to the user's Firestore tasks while
+    // logged in, clear local state on logout.
+    effect(() => {
+      const user = this.auth.user();
+      this.unsubscribe?.();
+      this.unsubscribe = null;
+
+      if (!user) {
+        this._tasks.set([]);
+        return;
+      }
+      this._loading.set(true);
+      this.unsubscribe = this.fsTasks.watch(user.id, (tasks) => {
+        this._tasks.set(tasks);
+        this._loading.set(false);
+      });
+    });
+  }
+
+  async add(input: NewTaskInput): Promise<void> {
+    const user = this.auth.user();
+    if (!user) return;
     const priority = input.priority ?? 'medium';
-    const task: Task = {
-      id: uid('t'),
+
+    // Firestore rejects `undefined` field values; we omit optional fields
+    // entirely when not set instead of letting them through as undefined.
+    const base: Omit<Task, 'id'> = {
       title: input.title.trim(),
-      notes: input.notes?.trim() || undefined,
       category: input.category ?? 'personal',
       priority,
       reward: input.reward ?? TASK_REWARD[priority],
-      dueAt: input.dueAt,
       createdAt: new Date().toISOString(),
       done: false,
     };
-    this._tasks.update((list) => [task, ...list]);
-    return task;
+    if (input.notes?.trim()) base.notes = input.notes.trim();
+    if (input.dueAt) base.dueAt = input.dueAt;
+
+    await this.fsTasks.add(user.id, base);
   }
 
-  toggle(id: string): void {
-    let earned: { amount: number; title: string } | null = null;
+  async addFromTemplate(template: TaskTemplate): Promise<void> {
+    await this.add({
+      title: template.title,
+      category: template.category,
+      priority: template.priority,
+      dueAt: template.defaultTime ? this.todayAt(template.defaultTime) : undefined,
+    });
+  }
 
-    this._tasks.update((list) =>
-      list.map((t) => {
-        if (t.id !== id) return t;
-        const nowDone = !t.done;
-        if (nowDone) earned = { amount: t.reward, title: t.title };
-        return {
-          ...t,
-          done: nowDone,
-          completedAt: nowDone ? new Date().toISOString() : undefined,
-        };
-      }),
-    );
+  async remove(id: string): Promise<void> {
+    const user = this.auth.user();
+    if (!user) return;
+    await this.fsTasks.remove(user.id, id);
+  }
 
-    if (earned) {
-      const { amount, title } = earned as { amount: number; title: string };
-      this.wallet.earn(amount, `Tarea completada · ${title}`);
+  /**
+   * Toggle done/undone. When marking complete, anti-cheat rules apply:
+   *
+   *   - If less than MIN_ELAPSED_MINUTES[priority] elapsed since creation,
+   *     the task is marked done but no coins are awarded ('too-fast').
+   *   - If more than 24h late vs dueAt, no coins ('late').
+   *   - 2h–24h late: half coins (rounded down, min 1).
+   *   - Within DUE_BONUS_MINUTES of dueAt: +1 coin bonus.
+   *   - Coins are clamped to remaining daily cap. If the cap is reached,
+   *     the rest are clipped ('partial') or zeroed ('capped').
+   */
+  async toggle(id: string): Promise<ToggleResult> {
+    const user = this.auth.user();
+    if (!user) return { earned: 0, reason: 'undo' };
+
+    const task = this._tasks().find((t) => t.id === id);
+    if (!task) return { earned: 0, reason: 'undo' };
+
+    const nowDone = !task.done;
+    const patch: Partial<Task> = nowDone
+      ? { done: true, completedAt: new Date().toISOString() }
+      : { done: false };
+
+    await this.fsTasks.update(user.id, id, patch);
+
+    if (!nowDone) return { earned: 0, reason: 'undo' };
+
+    const reward = this.computeReward(task);
+
+    if (reward.reason === 'too-fast') {
+      const wait = Math.ceil(
+        MIN_ELAPSED_MINUTES[task.priority] -
+          (Date.now() - new Date(task.createdAt).getTime()) / 60_000,
+      );
+      return { earned: 0, reason: 'too-fast', waitMinutes: Math.max(1, wait) };
     }
+
+    if (reward.reason === 'late') {
+      return { earned: 0, reason: 'late' };
+    }
+
+    const remainingCap = Math.max(0, this.dailyCap - this.todayEarned());
+    const earned = Math.min(reward.amount, remainingCap);
+
+    if (earned <= 0) {
+      return { earned: 0, reason: 'capped' };
+    }
+
+    this.wallet.earn(earned, `Tarea completada · ${task.title}`);
+
+    if (earned < reward.amount) {
+      return { earned, reason: 'partial' };
+    }
+    return { earned, reason: 'ok' };
   }
 
-  remove(id: string): void {
-    this._tasks.update((list) => list.filter((t) => t.id !== id));
+  // ------------- private helpers -------------
+
+  private computeReward(task: Task): { amount: number; reason: 'ok' | 'too-fast' | 'late' } {
+    const now = Date.now();
+    const created = new Date(task.createdAt).getTime();
+    const elapsedMin = (now - created) / 60_000;
+    if (elapsedMin < MIN_ELAPSED_MINUTES[task.priority]) {
+      return { amount: 0, reason: 'too-fast' };
+    }
+
+    let amount = TASK_REWARD[task.priority];
+
+    if (task.dueAt) {
+      const due = new Date(task.dueAt).getTime();
+      const minutesLate = (now - due) / 60_000;
+      const absMin = Math.abs(minutesLate);
+
+      if (minutesLate > 24 * 60) {
+        return { amount: 0, reason: 'late' };
+      }
+      if (minutesLate > 2 * 60) {
+        amount = Math.max(1, Math.floor(amount * 0.5));
+      }
+      if (absMin <= DUE_BONUS_MINUTES) {
+        amount += 1;
+      }
+    }
+
+    return { amount, reason: 'ok' };
+  }
+
+  private todayAt(hhmm: string): string {
+    const [hStr, mStr] = hhmm.split(':');
+    const h = Number(hStr ?? 0);
+    const m = Number(mStr ?? 0);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d.toISOString();
+  }
+
+  private startOfTodayMs(): number {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   }
 
   private byPriority(a: Task, b: Task): number {
-    const rank: Record<Task['priority'], number> = { high: 0, medium: 1, low: 2 };
+    const rank: Record<TaskPriority, number> = { high: 0, medium: 1, low: 2 };
     return rank[a.priority] - rank[b.priority];
   }
 }

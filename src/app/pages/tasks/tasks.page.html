@@ -10,6 +10,49 @@
 </ion-header>
 
 <ion-content [fullscreen]="true">
+  <!-- Daily coin cap progress -->
+  <section class="tk-cap" aria-label="Tope diario de monedas">
+    <div class="tk-cap__row">
+      <span class="tb-eyebrow">Hoy</span>
+      <span class="tk-cap__count">
+        {{ todayEarned() }} / {{ dailyCap }} monedas
+      </span>
+    </div>
+    <div class="tk-cap__bar">
+      <span class="tk-cap__fill" [style.width.%]="capProgress()"></span>
+    </div>
+  </section>
+
+  <!-- Quick-pick templates -->
+  <section class="tk-templates" aria-label="Plantillas rápidas">
+    <p class="tk-templates__hint">Toca para agregar al instante</p>
+    <div class="tk-templates__row">
+      @for (t of templates; track t.id) {
+        <button
+          type="button"
+          class="tk-template"
+          (click)="useTemplate(t)"
+        >
+          <span class="tk-template__icon" [style.color]="accentForCategory(t.category)">
+            <ion-icon [name]="iconForTemplate(t)" aria-hidden="true"></ion-icon>
+          </span>
+          <span class="tk-template__main">
+            <span class="tk-template__title">{{ t.title }}</span>
+            <span class="tk-template__meta">
+              @if (t.defaultTime) {
+                <span class="tk-template__time">{{ t.defaultTime }}</span>
+              }
+              @if (t.hint) {
+                <span class="tk-template__sep" aria-hidden="true">·</span>
+                <span class="tk-template__sub">{{ t.hint }}</span>
+              }
+            </span>
+          </span>
+        </button>
+      }
+    </div>
+  </section>
+
   <!-- Segmented filters -->
   <nav class="tk-segs" role="tablist">
     <button
