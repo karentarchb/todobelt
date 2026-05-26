@@ -1,0 +1,273 @@
+:host {
+  --ob-art-h: 56vh;
+  --ob-footer-h: 132px;
+}
+
+.ob-content {
+  --background: var(--tb-bg-0);
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.ob-skip {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: 16px;
+  z-index: 20;
+  padding: 8px 14px;
+  border-radius: var(--tb-r-pill);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--tb-border);
+  color: var(--tb-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition:
+    background var(--tb-dur-fast) var(--tb-ease),
+    color var(--tb-dur-fast) var(--tb-ease);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--tb-text);
+  }
+}
+
+.ob-swiper {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ob-slide {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-top: max(20px, env(safe-area-inset-top));
+}
+
+/* -------- Fullscreen photo slide -------- */
+.ob-slide--photo {
+  padding-top: 0;
+  padding-bottom: calc(var(--ob-footer-h) + env(safe-area-inset-bottom));
+  position: relative;
+}
+
+/* ============= ART REGIONS ============= */
+.ob-art {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  height: var(--ob-art-h);
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.ob-art--photo {
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+
+  .ob-art__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    display: block;
+  }
+
+  .ob-art__veil {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg,
+        rgba(5, 5, 5, 0.45) 0%,
+        rgba(5, 5, 5, 0) 18%,
+        rgba(5, 5, 5, 0) 80%,
+        rgba(5, 5, 5, 0.55) 100%);
+    pointer-events: none;
+  }
+}
+
+/* -------- Slide 2 — orbit -------- */
+.ob-art--scene {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(70% 60% at 50% 40%, rgba(255, 79, 163, 0.10) 0%, transparent 70%),
+    var(--tb-bg-0);
+}
+
+.ob-orbit {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-orbit__ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.10);
+  animation: ob-rotate 26s linear infinite;
+}
+.ob-orbit__ring--lg { inset: 0; }
+.ob-orbit__ring--md { inset: 36px; animation-duration: 22s; animation-direction: reverse; }
+.ob-orbit__ring--sm { inset: 86px; animation-duration: 18s; }
+
+.ob-center {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--tb-bg-2);
+  border: 1px solid var(--tb-border-strong);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tb-rose);
+  box-shadow: var(--tb-shadow-glow);
+
+  ion-icon { font-size: 26px; }
+}
+
+.ob-chip {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(17, 17, 17, 0.85);
+  border: 1px solid var(--tb-border-strong);
+  border-radius: var(--tb-r-pill);
+  color: var(--tb-text-strong);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--tb-shadow-sm);
+
+  ion-icon { font-size: 14px; }
+}
+
+.ob-chip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tb-rose);
+  box-shadow: 0 0 10px rgba(255, 79, 163, 0.6);
+}
+
+.ob-chip--coin   { top: 10%; left: 50%; transform: translateX(-50%); color: var(--tb-rose); }
+.ob-chip--coffee { top: 50%; right: -10px; transform: translateY(-50%); color: var(--tb-yellow); }
+.ob-chip--ice    { bottom: 14%; left: 6%;  color: var(--tb-rose-soft); }
+.ob-chip--break  { bottom: 14%; right: 6%; color: var(--tb-green); }
+
+@keyframes ob-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* -------- Slide 3 — focus ring -------- */
+.ob-art--focus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(60% 60% at 50% 50%, rgba(176, 108, 255, 0.10) 0%, transparent 70%),
+    var(--tb-bg-0);
+}
+
+.ob-focus {
+  position: relative;
+  width: 220px;
+  height: 220px;
+}
+
+.ob-focus__ring {
+  width: 100%;
+  height: 100%;
+  animation: ob-pulse 4s var(--tb-ease) infinite;
+}
+
+.ob-focus__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes ob-pulse {
+  0%,
+  100% { transform: scale(1); }
+  50%  { transform: scale(1.03); }
+}
+
+/* ============= COPY ============= */
+.ob-copy {
+  padding: 24px 24px 0;
+  text-align: left;
+}
+
+.ob-title {
+  margin: 8px 0 8px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--tb-text-strong);
+  line-height: 1.15;
+}
+
+.ob-subtitle {
+  margin: 0;
+  color: var(--tb-text-muted);
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 480px;
+}
+
+/* ============= FOOTER ============= */
+.ob-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 20px 24px max(20px, env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, transparent 0%, var(--tb-bg-0) 40%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  z-index: 10;
+}
+
+.ob-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ob-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition:
+    background var(--tb-dur) var(--tb-ease),
+    width var(--tb-dur) var(--tb-ease);
+}
+
+.ob-dot--active {
+  background: var(--tb-rose);
+  width: 22px;
+  border-radius: var(--tb-r-pill);
+}
