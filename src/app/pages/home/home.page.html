@@ -40,6 +40,23 @@
     </p>
   </section>
 
+  <!-- ============ Estadísticas link ============ -->
+  <button
+    type="button"
+    class="hm-stats tb-anim-rise"
+    (click)="goStats()"
+    aria-label="Ver estadísticas"
+  >
+    <span class="hm-stats__icon">
+      <ion-icon name="stats-chart-outline" aria-hidden="true"></ion-icon>
+    </span>
+    <span class="hm-stats__main">
+      <span class="hm-stats__title">Estadísticas</span>
+      <span class="hm-stats__sub">Promedios, sentimientos y récord de enfoque</span>
+    </span>
+    <ion-icon class="hm-stats__chev" name="chevron-forward" aria-hidden="true"></ion-icon>
+  </button>
+
   <!-- ============ Tasks ============ -->
   <tb-section-header
     title="Tus próximas tareas"

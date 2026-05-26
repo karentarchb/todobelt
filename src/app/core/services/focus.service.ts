@@ -1,5 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+
 import { WalletService } from './wallet.service';
+import { AuthService } from './auth.service';
+import { FirestoreFocusService } from './firestore-focus.service';
 
 export interface FocusSession {
   /** Total duration in seconds. */
@@ -13,6 +16,8 @@ export interface FocusSession {
 @Injectable({ providedIn: 'root' })
 export class FocusService {
   private readonly wallet = inject(WalletService);
+  private readonly auth = inject(AuthService);
+  private readonly fsFocus = inject(FirestoreFocusService);
 
   private readonly _session = signal<FocusSession>({
     duration: 25 * 60,
@@ -75,9 +80,28 @@ export class FocusService {
         clearInterval(this.intervalId);
         this.intervalId = null;
       }
+      const completedAt = new Date().toISOString();
       this._session.set({ ...s, remaining: 0, state: 'done' });
+
       const reward = Math.max(2, Math.round(s.duration / 60 / 5));
       this.wallet.earn(reward, 'Sesión de enfoque completada');
+
+      // Persist the completed session so StatsPage can compute best-record
+      // and totals. Aborted (paused+reset) sessions are intentionally not
+      // recorded — only true completions count.
+      const user = this.auth.user();
+      if (user) {
+        void this.fsFocus
+          .record(user.id, {
+            durationSec: s.duration,
+            startedAt: s.startedAt ?? completedAt,
+            completedAt,
+          })
+          .catch((err) => {
+            // eslint-disable-next-line no-console
+            console.error('[focus] record session failed:', err);
+          });
+      }
       return;
     }
     this._session.set({ ...s, remaining: s.remaining - 1 });

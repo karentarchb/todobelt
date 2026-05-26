@@ -1,0 +1,117 @@
+<ion-header class="tb-clean">
+  <ion-toolbar>
+    <div class="st-top">
+      <button type="button" class="st-back" (click)="goBack()" aria-label="Volver">
+        <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
+      </button>
+      <h1 class="st-top__title">Estadísticas</h1>
+      <span class="st-top__spacer" aria-hidden="true"></span>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content
+      pullingText="Suelta para actualizar"
+      refreshingSpinner="lines"
+    ></ion-refresher-content>
+  </ion-refresher>
+
+  <p class="st-lead">
+    Un vistazo a tus promedios, sentimientos y récord de enfoque.
+  </p>
+
+  <!-- ============ Actividades ============ -->
+  <section class="st-card tb-anim-rise">
+    <span class="tb-eyebrow">Actividades</span>
+
+    @if (hasTaskData()) {
+      <h2 class="st-card__hero">
+        {{ summary().tasksAveragePerDay }}
+        <span class="st-card__hero-unit">/ día</span>
+      </h2>
+      <p class="st-card__sub">
+        Promedio sobre {{ summary().tasksActiveDays }}
+        {{ pluralize(summary().tasksActiveDays, 'día activo', 'días activos') }}
+      </p>
+
+      <div class="st-card__row">
+        <div class="st-mini">
+          <span class="st-mini__value">{{ summary().tasksThisWeek }}</span>
+          <span class="st-mini__label">Esta semana</span>
+        </div>
+        <div class="st-mini">
+          <span class="st-mini__value">{{ summary().tasksTotalCompleted }}</span>
+          <span class="st-mini__label">Total completadas</span>
+        </div>
+      </div>
+    } @else {
+      <p class="st-card__empty">
+        Aún no has completado tareas. Cuando lo hagas, verás tus promedios aquí.
+      </p>
+    }
+  </section>
+
+  <!-- ============ Sentimientos ============ -->
+  <section class="st-card tb-anim-rise">
+    <span class="tb-eyebrow">Sentimientos</span>
+
+    @if (hasMoodData() && summary().moodMostFrequent; as mood) {
+      <h2 class="st-card__hero st-card__hero--mood">
+        <span class="st-card__mood-emoji">{{ mood.emoji }}</span>
+        {{ mood.label }}
+      </h2>
+      <p class="st-card__sub">
+        Cómo te has sentido en {{ summary().moodDaysTracked }}
+        {{ pluralize(summary().moodDaysTracked, 'día registrado', 'días registrados') }}
+      </p>
+
+      <ul class="st-bars" aria-label="Distribución de estados de ánimo">
+        @for (b of summary().moodDistribution; track b.key) {
+          <li class="st-bar" [class.st-bar--zero]="b.count === 0">
+            <span class="st-bar__emoji" aria-hidden="true">{{ b.emoji }}</span>
+            <span class="st-bar__label">{{ b.label }}</span>
+            <span class="st-bar__track" aria-hidden="true">
+              <span class="st-bar__fill" [style.width.%]="b.percent"></span>
+            </span>
+            <span class="st-bar__percent">{{ b.percent }}%</span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="st-card__empty">
+        Empieza a registrar cómo te sientes cada día y verás aquí tu patrón.
+      </p>
+    }
+  </section>
+
+  <!-- ============ Enfoque / Pomodoro ============ -->
+  <section class="st-card tb-anim-rise">
+    <span class="tb-eyebrow">Enfoque</span>
+
+    @if (hasFocusData()) {
+      <h2 class="st-card__hero">{{ bestRecordLabel() }}</h2>
+      <p class="st-card__sub">Tu mejor sesión de enfoque</p>
+
+      <div class="st-card__row">
+        <div class="st-mini">
+          <span class="st-mini__value">{{ summary().focusSessionCount }}</span>
+          <span class="st-mini__label">
+            {{ pluralize(summary().focusSessionCount, 'sesión', 'sesiones') }}
+          </span>
+        </div>
+        <div class="st-mini">
+          <span class="st-mini__value">{{ totalFocusLabel() }}</span>
+          <span class="st-mini__label">Tiempo total</span>
+        </div>
+      </div>
+    } @else {
+      <p class="st-card__empty">
+        Completa una sesión en Enfoque para registrar tu primer récord.
+      </p>
+    }
+  </section>
+
+  <div class="st-tail"></div>
+</ion-content>

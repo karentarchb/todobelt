@@ -51,6 +51,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('@pages/profile/profile.page').then((m) => m.ProfilePage),
       },
+      {
+        // Reachable from Home — intentionally not added to the tab bar so
+        // the bottom menu stays focused on the five primary destinations.
+        path: 'stats',
+        loadComponent: () =>
+          import('@pages/stats/stats.page').then((m) => m.StatsPage),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'home' },
     ],
   },
