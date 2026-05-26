@@ -1,0 +1,158 @@
+<ion-content [fullscreen]="true" class="lg-content">
+  <!-- Ambient background -->
+  <div class="lg-bg" aria-hidden="true">
+    <span class="lg-bg__glow"></span>
+    <div class="lg-bg__rings">
+      <span class="lg-bg__ring lg-bg__ring--1"></span>
+      <span class="lg-bg__ring lg-bg__ring--2"></span>
+      <span class="lg-bg__ring lg-bg__ring--3"></span>
+      <span class="lg-bg__ring lg-bg__ring--4"></span>
+    </div>
+  </div>
+
+  <main class="lg-wrap">
+    <!-- ============ Brand ============ -->
+    <header class="lg-brand tb-anim-rise">
+      <div class="lg-brand__logo">
+        <img
+          src="assets/logobelt.svg"
+          alt="TODO BELT"
+          class="lg-brand__svg"
+          decoding="async"
+        />
+      </div>
+
+      <h1 class="lg-brand__name">
+        <span>TODO</span><span class="lg-brand__name--accent">BELT</span>
+      </h1>
+      <p class="lg-brand__tagline">
+        Enfócate. Completa. Gana.
+        <span class="lg-brand__tagline--accent"> Disfruta.</span>
+      </p>
+    </header>
+
+    <!-- ============ Card ============ -->
+    <section class="lg-card tb-anim-rise">
+      <form class="lg-form" (ngSubmit)="submit()" novalidate>
+        <div class="lg-field">
+          <ion-icon name="mail-outline" aria-hidden="true"></ion-icon>
+          <input
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="Correo electrónico"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            required
+          />
+        </div>
+
+        <div class="lg-field">
+          <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="current-password"
+            placeholder="Contraseña"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            required
+          />
+          <button
+            type="button"
+            class="lg-field__toggle"
+            (click)="togglePassword()"
+            [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          >
+            <ion-icon [name]="showPassword() ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
+          </button>
+        </div>
+
+        <div class="lg-row">
+          <button
+            type="button"
+            class="lg-remember"
+            [class.lg-remember--on]="remember()"
+            (click)="toggleRemember()"
+            [attr.aria-pressed]="remember()"
+          >
+            <span class="lg-remember__box" aria-hidden="true">
+              @if (remember()) {
+                <ion-icon name="checkmark"></ion-icon>
+              }
+            </span>
+            <span>Recordarme</span>
+          </button>
+
+          <button type="button" class="lg-forgot">
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          class="lg-submit"
+          [disabled]="!canSubmit()"
+        >
+          @if (loading()) {
+            <span class="lg-submit__spinner" aria-hidden="true"></span>
+          }
+          <span>Iniciar sesión</span>
+          <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+        </button>
+      </form>
+
+      <div class="lg-divider">
+        <span>o continúa con</span>
+      </div>
+
+      <div class="lg-social">
+        <button type="button" class="lg-social__btn" (click)="continueWith('google')" aria-label="Continuar con Google">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.66 4.1-5.5 4.1-3.3 0-6-2.74-6-6.1s2.7-6.1 6-6.1c1.88 0 3.14.8 3.86 1.48l2.64-2.55C16.86 3.3 14.66 2.3 12 2.3 6.86 2.3 2.7 6.46 2.7 11.6S6.86 21 12 21c6.92 0 9.5-4.86 9.5-7.42 0-.5-.06-.92-.14-1.38H12z"/>
+            <path fill="#FBBC05" d="M3.46 7.66 6.65 10c.86-2.04 2.86-3.5 5.35-3.5 1.88 0 3.14.8 3.86 1.48l2.64-2.55C16.86 3.3 14.66 2.3 12 2.3 8.06 2.3 4.66 4.46 3.46 7.66z"/>
+            <path fill="#34A853" d="M12 21c2.6 0 4.78-.86 6.38-2.34l-3.06-2.5c-.84.6-1.96 1.02-3.32 1.02-2.56 0-4.74-1.66-5.52-4l-3.18 2.46C4.62 18.68 8.02 21 12 21z"/>
+            <path fill="#4285F4" d="M21.36 12.2c0-.5-.06-.92-.14-1.38H12v3.9h5.5c-.26 1.36-1.06 2.5-2.18 3.34l3.06 2.5c1.8-1.66 2.98-4.12 2.98-7.36z"/>
+          </svg>
+        </button>
+
+        <button type="button" class="lg-social__btn" (click)="continueWith('apple')" aria-label="Continuar con Apple">
+          <ion-icon name="logo-apple" aria-hidden="true"></ion-icon>
+        </button>
+
+        <button type="button" class="lg-social__btn" (click)="continueWith('facebook')" aria-label="Continuar con Facebook">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+            <path
+              fill="#1877F2"
+              d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.84c0-2.52 1.5-3.92 3.78-3.92 1.1 0 2.24.2 2.24.2v2.48h-1.26c-1.24 0-1.63.78-1.63 1.58v1.88h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94z"
+            />
+            <path
+              fill="#fff"
+              d="m15.91 14.97.44-2.91h-2.78v-1.88c0-.8.39-1.58 1.63-1.58h1.26V6.12s-1.14-.2-2.24-.2c-2.28 0-3.78 1.4-3.78 3.92v2.22H7.9v2.91h2.54V22c.5.08 1.02.12 1.56.12s1.06-.04 1.56-.12v-7.03h2.34z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Security tile -->
+      <div class="lg-safe">
+        <span class="lg-safe__icon">
+          <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+        </span>
+        <div class="lg-safe__copy">
+          <p class="lg-safe__title">Tu información está segura</p>
+          <p class="lg-safe__sub">Nunca compartiremos tus datos.</p>
+        </div>
+      </div>
+
+      <p class="lg-footer">
+        ¿No tienes cuenta?
+        <button type="button" class="lg-footer__link">
+          Crear cuenta
+          <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+        </button>
+      </p>
+    </section>
+  </main>
+</ion-content>
