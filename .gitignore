@@ -1,0 +1,65 @@
+# ============================================================
+# TODO BELT · .gitignore
+# ============================================================
+
+# Build output
+/dist
+/www
+/tmp
+/out-tsc
+/.angular
+/coverage
+
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# Ionic / Capacitor
+/platforms
+/plugins
+/.sourcemaps
+/.versions
+.ionic
+ionic.config.tmp.json
+
+# Native projects (added later via Capacitor)
+/android
+/ios
+
+# IDE / editor
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.iml
+.project
+.classpath
+.c9
+*.launch
+.settings/
+*.sublime-workspace
+.history
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Local tooling caches
+.claude/
+.eslintcache
+
+# Logs
+*.log
+logs/
+
+# Misc
+*.swp
+*.bak
+*.tmp
