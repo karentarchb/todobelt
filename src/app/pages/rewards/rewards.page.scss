@@ -1,0 +1,87 @@
+.rw-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 20px 4px;
+}
+
+.rw-top__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--tb-text-strong);
+}
+
+/* -------- Wallet card -------- */
+.rw-wallet {
+  margin: 16px 0 4px;
+  padding: 24px 20px 20px;
+  border-radius: var(--tb-r-lg);
+  background:
+    radial-gradient(120% 100% at 100% 0%, rgba(255, 79, 163, 0.12) 0%, transparent 60%),
+    var(--tb-bg-2);
+  border: 1px solid var(--tb-border);
+}
+
+.rw-wallet__big {
+  margin: 6px 0 14px;
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--tb-text-strong);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.rw-wallet__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rw-wallet__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rw-wallet__stat-label {
+  font-size: 11px;
+  color: var(--tb-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rw-wallet__stat-value {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tb-text-strong);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.rw-wallet__sep {
+  width: 1px;
+  height: 28px;
+  background: var(--tb-border);
+}
+
+/* -------- Lists -------- */
+.rw-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rw-empty {
+  margin: 8px 0;
+  padding: 18px;
+  border-radius: var(--tb-r-md);
+  border: 1px dashed var(--tb-border-strong);
+  color: var(--tb-text-muted);
+  font-size: 13.5px;
+}
+
+.rw-tail { height: 40px; }
