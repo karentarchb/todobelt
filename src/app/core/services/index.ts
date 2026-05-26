@@ -5,6 +5,8 @@ export * from './auth.service';
 export * from './firestore-tasks.service';
 export * from './firestore-wallet.service';
 export * from './firestore-rewards.service';
+export * from './firestore-profile.service';
+export * from './profile.service';
 export * from './tasks.service';
 export * from './rewards.service';
 export * from './wallet.service';

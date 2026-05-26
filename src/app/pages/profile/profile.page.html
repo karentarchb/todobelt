@@ -7,15 +7,62 @@
 <ion-content [fullscreen]="true">
   <!-- Identity -->
   <section class="pf-id tb-anim-rise">
-    <div class="pf-avatar">{{ initialsFor(user()?.name) }}</div>
-    <div class="pf-name">{{ user()?.name || 'Invitada' }}</div>
-    <div class="pf-email">{{ user()?.email }}</div>
+    <div class="pf-avatar">{{ initialsFor(displayName()) }}</div>
 
-    @if (mood(); as m) {
-      <div class="pf-mood">
-        <span class="pf-mood__emoji">{{ m.emoji }}</span>
-        <span>Te sientes {{ m.label.toLowerCase() }}</span>
+    @if (editing()) {
+      <div class="pf-edit">
+        <label class="pf-edit__field">
+          <span class="pf-edit__label">Nombre</span>
+          <input
+            type="text"
+            class="pf-edit__input"
+            placeholder="¿Cómo te llamas?"
+            [ngModel]="draftName()"
+            (ngModelChange)="draftName.set($event)"
+            maxlength="48"
+            autofocus
+          />
+        </label>
+        <label class="pf-edit__field">
+          <span class="pf-edit__label">Bio</span>
+          <textarea
+            class="pf-edit__input pf-edit__input--area"
+            placeholder="Algo corto sobre ti."
+            [ngModel]="draftBio()"
+            (ngModelChange)="draftBio.set($event)"
+            maxlength="140"
+            rows="3"
+          ></textarea>
+        </label>
+
+        <div class="pf-edit__actions">
+          <button type="button" class="pf-edit__cancel" (click)="cancelEdit()">
+            Cancelar
+          </button>
+          <tb-primary-button [loading]="saving()" (pressed)="saveEdit()">
+            Guardar
+          </tb-primary-button>
+        </div>
       </div>
+    } @else {
+      <div class="pf-name">{{ displayName() }}</div>
+      <div class="pf-email">{{ user()?.email }}</div>
+
+      @if (bioText()) {
+        <p class="pf-bio">{{ bioText() }}</p>
+      }
+
+      <button type="button" class="pf-edit-trigger" (click)="startEdit()">
+        <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+        Editar perfil
+      </button>
+
+      @if (mood(); as m) {
+        <div class="pf-mood">
+          <span class="pf-mood__emoji">{{ m.emoji }}</span>
+          <span>Te sientes {{ m.label.toLowerCase() }}</span>
+        </div>
+      }
     }
   </section>
 
