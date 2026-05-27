@@ -53,6 +53,7 @@ export class TasksPage {
   readonly draftPriority = signal<TaskPriority>('medium');
   /** Time-of-day picker value (HH:mm). Empty string = no specific time. */
   readonly draftDueTime = signal<string>('');
+  readonly draftRecurrence = signal<'none' | 'daily' | 'weekly'>('none');
 
   readonly categories = this.categoriesSvc.categories;
 
@@ -190,6 +191,7 @@ export class TasksPage {
     this.draftCategory.set(first?.id ?? 'personal');
     this.draftPriority.set('medium');
     this.draftDueTime.set('');
+    this.draftRecurrence.set('none');
     this.showAdd.set(true);
   }
 
@@ -199,6 +201,7 @@ export class TasksPage {
     this.draftCategory.set(task.category);
     this.draftPriority.set(task.priority);
     this.draftDueTime.set(this.extractTime(task.dueAt));
+    this.draftRecurrence.set(task.recurrence ?? 'none');
     this.showAdd.set(true);
   }
 
@@ -214,6 +217,7 @@ export class TasksPage {
     this.draftCategory.set(template.category);
     this.draftPriority.set(template.priority);
     this.draftDueTime.set(template.defaultTime ?? '');
+    this.draftRecurrence.set(template.recurrence ?? 'none');
   }
 
   async submit(): Promise<void> {
@@ -221,6 +225,8 @@ export class TasksPage {
     if (!title) return;
 
     const dueAt = this.draftDueTime() ? this.todayAt(this.draftDueTime()) : undefined;
+    const rec = this.draftRecurrence();
+    const recurrence = rec === 'none' ? undefined : rec;
 
     const id = this.editingId();
     if (id) {
@@ -229,6 +235,7 @@ export class TasksPage {
         category: this.draftCategory(),
         priority: this.draftPriority(),
         dueAt,
+        recurrence,
       });
     } else {
       await this.tasksSvc.add({
@@ -236,6 +243,7 @@ export class TasksPage {
         category: this.draftCategory(),
         priority: this.draftPriority(),
         dueAt,
+        recurrence,
       });
     }
     this.closeAdd();
