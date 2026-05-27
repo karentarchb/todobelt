@@ -87,4 +87,8 @@ export class HomePage {
   goRewards(): void {
     void this.router.navigateByUrl('/tabs/rewards');
   }
+
+  goStats(): void {
+    void this.router.navigateByUrl('/tabs/stats');
+  }
 }
