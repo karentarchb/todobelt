@@ -1,0 +1,36 @@
+.tb-coin {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 8px;
+  background: rgba(255, 79, 163, 0.08);
+  border: 1px solid rgba(255, 79, 163, 0.18);
+  color: var(--tb-text-strong);
+  border-radius: var(--tb-r-pill);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.tb-coin__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--tb-rose);
+  box-shadow: 0 0 12px rgba(255, 79, 163, 0.6);
+}
+
+.tb-coin__value {
+  white-space: nowrap;
+}
+
+.tb-coin--lg {
+  padding: 10px 16px 10px 12px;
+  font-size: 15px;
+
+  .tb-coin__dot {
+    width: 12px;
+    height: 12px;
+  }
+}
