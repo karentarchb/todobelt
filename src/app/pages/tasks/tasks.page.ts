@@ -1,17 +1,19 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 
 import { TasksService } from '@core/services/tasks.service';
-import { TaskCategory, TaskPriority, TaskTemplate } from '@core/models';
-import { CATEGORY_META } from '@core/constants/app.constants';
+import { CategoriesService } from '@core/services/categories.service';
+import { TaskCategoryId, TaskPriority, TaskTemplate } from '@core/models';
+import { ACCENT_VAR } from '@core/constants/category-defaults.constants';
 import { flashToggle } from '@core/helpers/toggle-feedback.helper';
 
 import { TaskCardComponent } from '@shared/components/task-card/task-card.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { PrimaryButtonComponent } from '@shared/components/primary-button/primary-button.component';
 
-type Filter = 'all' | 'today' | 'done';
+type StatusFilter = 'all' | 'today' | 'done';
 
 @Component({
   selector: 'app-tasks',
@@ -29,19 +31,20 @@ type Filter = 'all' | 'today' | 'done';
 })
 export class TasksPage {
   private readonly tasksSvc = inject(TasksService);
+  private readonly categoriesSvc = inject(CategoriesService);
   private readonly toastCtrl = inject(ToastController);
+  private readonly router = inject(Router);
 
-  readonly filter = signal<Filter>('all');
+  readonly statusFilter = signal<StatusFilter>('all');
+  readonly categoryFilter = signal<TaskCategoryId | null>(null);
+
   readonly showAdd = signal(false);
 
   readonly draftTitle = signal('');
-  readonly draftCategory = signal<TaskCategory>('personal');
+  readonly draftCategory = signal<TaskCategoryId>('personal');
   readonly draftPriority = signal<TaskPriority>('medium');
 
-  readonly categories = Object.entries(CATEGORY_META).map(([key, meta]) => ({
-    key: key as TaskCategory,
-    ...meta,
-  }));
+  readonly categories = this.categoriesSvc.categories;
 
   readonly priorities: { key: TaskPriority; label: string }[] = [
     { key: 'low', label: 'Suave' },
@@ -60,15 +63,18 @@ export class TasksPage {
   });
 
   readonly visible = computed(() => {
-    const all = this.tasksSvc.tasks();
-    switch (this.filter()) {
+    let result = this.tasksSvc.tasks();
+    switch (this.statusFilter()) {
       case 'today':
-        return all.filter((t) => !t.done);
+        result = result.filter((t) => !t.done);
+        break;
       case 'done':
-        return all.filter((t) => t.done);
-      default:
-        return all;
+        result = result.filter((t) => t.done);
+        break;
     }
+    const cat = this.categoryFilter();
+    if (cat) result = result.filter((t) => t.category === cat);
+    return result;
   });
 
   readonly counts = computed(() => ({
@@ -94,16 +100,22 @@ export class TasksPage {
   }
 
   iconForTemplate(t: TaskTemplate): string {
-    return t.icon ?? CATEGORY_META[t.category].icon;
+    return t.icon ?? this.iconForCategory(t.category);
   }
 
-  accentForCategory(category: TaskCategory): string {
-    return CATEGORY_META[category].accent;
+  iconForCategory(id: TaskCategoryId): string {
+    return this.categoriesSvc.byId(id)?.icon ?? 'pricetag-outline';
+  }
+
+  accentForCategory(id: TaskCategoryId): string {
+    const cat = this.categoriesSvc.byId(id);
+    return cat ? ACCENT_VAR[cat.accent] : 'var(--tb-text-muted)';
   }
 
   openAdd(): void {
     this.draftTitle.set('');
-    this.draftCategory.set('personal');
+    const first = this.categories()[0];
+    this.draftCategory.set(first?.id ?? 'personal');
     this.draftPriority.set('medium');
     this.showAdd.set(true);
   }
@@ -123,7 +135,19 @@ export class TasksPage {
     this.closeAdd();
   }
 
-  setFilter(f: Filter): void {
-    this.filter.set(f);
+  setStatus(f: StatusFilter): void {
+    this.statusFilter.set(f);
+  }
+
+  toggleCategoryFilter(id: TaskCategoryId): void {
+    this.categoryFilter.update((current) => (current === id ? null : id));
+  }
+
+  clearCategoryFilter(): void {
+    this.categoryFilter.set(null);
+  }
+
+  goCategories(): void {
+    void this.router.navigateByUrl('/tabs/categories');
   }
 }

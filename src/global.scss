@@ -2,7 +2,13 @@
    TODO BELT · Global Stylesheet
    ========================================= */
 
-/* Ionic core */
+/* Sass modules first — `@use` must appear before any other rule, including
+   CSS `@import`s. `... as *` keeps the contents unscoped so existing
+   `@include tb-display(...)` calls work without a namespace prefix. */
+@use 'styles/mixins' as *;
+@use 'styles/animations' as *;
+
+/* Ionic core stylesheets (native CSS @import). */
 @import '@ionic/angular/css/core.css';
 @import '@ionic/angular/css/normalize.css';
 @import '@ionic/angular/css/structure.css';
@@ -14,10 +20,6 @@
 @import '@ionic/angular/css/text-alignment.css';
 @import '@ionic/angular/css/text-transformation.css';
 @import '@ionic/angular/css/flex-utils.css';
-
-/* Project styles */
-@import 'styles/mixins';
-@import 'styles/animations';
 
 /* -------- Base resets -------- */
 * {

@@ -14,13 +14,19 @@
   color: var(--tb-text-strong);
 }
 
-.tk-add {
+.tk-top__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tk-iconbtn {
   width: 38px;
   height: 38px;
   border-radius: 50%;
   background: var(--tb-bg-2);
   border: 1px solid var(--tb-border-strong);
-  color: var(--tb-rose);
+  color: var(--tb-text);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -29,13 +35,16 @@
     background var(--tb-dur-fast) var(--tb-ease),
     transform var(--tb-dur-fast) var(--tb-ease);
 
-  ion-icon { font-size: 22px; }
+  ion-icon { font-size: 20px; }
 
-  &:hover {
-    background: var(--tb-bg-3);
-  }
-
+  &:hover { background: var(--tb-bg-3); }
   &:active { transform: scale(0.94); }
+}
+
+.tk-iconbtn--accent {
+  color: var(--tb-rose);
+
+  ion-icon { font-size: 22px; }
 }
 
 /* -------- Daily cap -------- */
@@ -171,6 +180,64 @@
 }
 
 .tk-template__sep { opacity: 0.5; }
+
+/* -------- Category filter -------- */
+.tk-catfilter {
+  margin: 16px 0 4px;
+}
+
+.tk-catfilter__row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 4px 4px 0;
+  margin: 0 -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.tk-catchip {
+  --chip-accent: var(--tb-rose);
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--tb-bg-2);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-r-pill);
+  color: var(--tb-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--tb-dur-fast) var(--tb-ease),
+    border-color var(--tb-dur-fast) var(--tb-ease),
+    color var(--tb-dur-fast) var(--tb-ease),
+    transform var(--tb-dur-fast) var(--tb-ease);
+
+  ion-icon {
+    font-size: 14px;
+    color: var(--chip-accent);
+  }
+
+  &:hover {
+    background: var(--tb-bg-3);
+    color: var(--tb-text);
+  }
+
+  &:active { transform: scale(0.97); }
+}
+
+.tk-catchip--active {
+  background: rgba(255, 79, 163, 0.10);
+  border-color: rgba(255, 79, 163, 0.35);
+  color: var(--tb-text-strong);
+}
 
 /* -------- Segments -------- */
 .tk-segs {
@@ -330,6 +397,13 @@
   background: rgba(255, 79, 163, 0.10);
   border-color: rgba(255, 79, 163, 0.35);
   color: var(--tb-text-strong);
+}
+
+.tk-chip--manage {
+  border-style: dashed;
+  color: var(--tb-text-muted);
+
+  ion-icon { color: var(--tb-text-muted); }
 }
 
 .tk-chip--prio {
