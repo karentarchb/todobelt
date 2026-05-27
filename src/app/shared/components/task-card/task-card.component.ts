@@ -82,7 +82,17 @@ export class TaskCardComponent {
   };
 
   get due(): string {
-    return relativeDay(this.task.dueAt);
+    if (!this.task.dueAt) return '';
+    const day = relativeDay(this.task.dueAt);
+    const d = new Date(this.task.dueAt);
+    const h = d.getHours();
+    const m = d.getMinutes();
+    // Only show time if dueAt was set with a specific time of day
+    // (skip midnight 00:00 which means "no specific time").
+    if (h === 0 && m === 0) return day;
+    const hh = String(h).padStart(2, '0');
+    const mm = String(m).padStart(2, '0');
+    return `${day} · ${hh}:${mm}`;
   }
 
   onCheckClick(ev: MouseEvent): void {

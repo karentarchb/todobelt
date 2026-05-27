@@ -239,58 +239,109 @@
   color: var(--tb-text-strong);
 }
 
-/* -------- Segments -------- */
-.tk-segs {
-  display: flex;
-  gap: 8px;
-  margin: 16px 0 20px;
-  padding: 4px;
-  background: var(--tb-bg-2);
-  border: 1px solid var(--tb-border);
-  border-radius: var(--tb-r-pill);
+/* -------- Completed tasks drawer -------- */
+.tk-drawer {
+  margin: 28px 0 0;
 }
 
-.tk-seg {
-  flex: 1;
+.tk-drawer__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--tb-bg-2);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-r-lg);
+  color: var(--tb-text);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--tb-dur-fast) var(--tb-ease),
+    border-color var(--tb-dur-fast) var(--tb-ease);
+
+  &:hover {
+    background: var(--tb-bg-3);
+    border-color: var(--tb-border-strong);
+  }
+}
+
+.tk-drawer__icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 14px;
-  border-radius: var(--tb-r-pill);
-  background: transparent;
-  border: none;
-  color: var(--tb-text-muted);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background var(--tb-dur-fast) var(--tb-ease),
-    color var(--tb-dur-fast) var(--tb-ease);
+  background: rgba(77, 255, 136, 0.10);
+  border: 1px solid rgba(77, 255, 136, 0.20);
+  color: var(--tb-green);
+
+  ion-icon { font-size: 16px; }
 }
 
-.tk-seg__count {
+.tk-drawer__label {
+  flex: 1 1 auto;
   display: inline-flex;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 6px;
+  align-items: center;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--tb-text-strong);
+  letter-spacing: -0.005em;
+}
+
+.tk-drawer__count {
+  display: inline-flex;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 8px;
   border-radius: var(--tb-r-pill);
   background: rgba(255, 255, 255, 0.04);
-  color: var(--tb-text-faint);
-  font-size: 11px;
+  color: var(--tb-text-muted);
+  font-size: 11.5px;
   font-weight: 600;
   align-items: center;
   justify-content: center;
 }
 
-.tk-seg--active {
-  background: var(--tb-bg-4);
-  color: var(--tb-text-strong);
+.tk-drawer__chev {
+  flex: 0 0 auto;
+  font-size: 18px;
+  color: var(--tb-text-faint);
+  transition: transform var(--tb-dur-fast) var(--tb-ease);
+}
 
-  .tk-seg__count {
-    background: rgba(255, 79, 163, 0.15);
-    color: var(--tb-rose);
-  }
+.tk-drawer__toggle--open .tk-drawer__chev {
+  color: var(--tb-text);
+}
+
+.tk-drawer__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px 0 0;
+  // Completed cards visually softer
+  opacity: 0.78;
+}
+
+/* -------- Time picker -------- */
+.tk-time {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--tb-bg-3);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-r-md);
+  color: var(--tb-text-strong);
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  color-scheme: dark;
+  transition: border-color var(--tb-dur-fast) var(--tb-ease);
+
+  &::placeholder { color: var(--tb-text-faint); }
+  &:focus { border-color: var(--tb-rose); }
 }
 
 /* -------- List -------- */
