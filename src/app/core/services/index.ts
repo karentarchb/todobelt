@@ -1,4 +1,5 @@
 export * from './storage.service';
+export * from './firebase.service';
 export * from './onboarding.service';
 export * from './auth.service';
 export * from './tasks.service';
