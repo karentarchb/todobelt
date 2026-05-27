@@ -25,9 +25,21 @@ export class AuthService {
   readonly user = computed(() => this._user());
   readonly isAuthenticated = computed(() => this._user() !== null);
 
+  /**
+   * Suppresses the onAuthStateChanged-driven signal update during signUp.
+   * Reason: createUserWithEmailAndPassword fires the listener BEFORE
+   * updateProfile() has a chance to set displayName, which would cache
+   * a profile with the email-derived fallback name and seed the Firestore
+   * profile doc with the wrong displayName. With this flag we ignore the
+   * intermediate listener tick and emit the signal manually after
+   * updateProfile completes.
+   */
+  private suspendListener = false;
+
   constructor() {
     // Single source of truth — Firebase Auth state drives our local signal.
     onAuthStateChanged(this.firebase.auth, (firebaseUser) => {
+      if (this.suspendListener) return;
       if (firebaseUser) {
         const profile = this.toProfile(firebaseUser);
         this._user.set(profile);
@@ -56,15 +68,26 @@ export class AuthService {
   }
 
   async signUp(credentials: AuthCredentials, displayName?: string): Promise<UserProfile> {
-    const cred = await createUserWithEmailAndPassword(
-      this.firebase.auth,
-      credentials.email.trim(),
-      credentials.password,
-    );
-    if (displayName) {
-      await updateProfile(cred.user, { displayName });
+    this.suspendListener = true;
+    try {
+      const cred = await createUserWithEmailAndPassword(
+        this.firebase.auth,
+        credentials.email.trim(),
+        credentials.password,
+      );
+      if (displayName) {
+        await updateProfile(cred.user, { displayName });
+      }
+      // Manually emit AFTER updateProfile completes so downstream
+      // services (ProfileService.ensureExists, etc.) see the correct
+      // displayName from the very first signal tick.
+      const profile = this.toProfile(cred.user);
+      this._user.set(profile);
+      await this.storage.set(STORAGE_KEYS.authUser, profile);
+      return profile;
+    } finally {
+      this.suspendListener = false;
     }
-    return this.toProfile(cred.user);
   }
 
   /**

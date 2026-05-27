@@ -1,0 +1,227 @@
+<ion-content [fullscreen]="true" class="rg-content">
+  <!-- Ambient background — same animated rings as login -->
+  <div class="rg-bg" aria-hidden="true">
+    <span class="rg-bg__glow"></span>
+  </div>
+
+  <main class="rg-wrap">
+    <!-- ============ Brand ============ -->
+    <header class="rg-brand tb-anim-rise">
+      <div class="rg-brand__logo">
+        <img
+          src="assets/logobelt.svg"
+          alt="TODO BELT"
+          class="rg-brand__svg"
+          decoding="async"
+        />
+      </div>
+      <h1 class="rg-brand__name">
+        <span>TODO</span><span class="rg-brand__name--accent">BELT</span>
+      </h1>
+      <p class="rg-brand__tagline">Empieza con paso firme. Sin estrés.</p>
+    </header>
+
+    <!-- ============ Card ============ -->
+    <section class="rg-card tb-anim-rise">
+      <header class="rg-card__head">
+        <h2 class="rg-card__title">Crear cuenta</h2>
+        <p class="rg-card__sub">Necesitamos algunos datos básicos para empezar.</p>
+      </header>
+
+      <form class="rg-form" (ngSubmit)="submit()" novalidate>
+        <!-- Nombre -->
+        <div class="rg-field">
+          <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+          <input
+            type="text"
+            autocomplete="given-name"
+            placeholder="Nombre"
+            [ngModel]="firstName()"
+            (ngModelChange)="firstName.set($event)"
+            name="firstName"
+            maxlength="48"
+            required
+          />
+        </div>
+
+        <!-- Apellidos -->
+        <div class="rg-field">
+          <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+          <input
+            type="text"
+            autocomplete="family-name"
+            placeholder="Apellidos"
+            [ngModel]="lastName()"
+            (ngModelChange)="lastName.set($event)"
+            name="lastName"
+            maxlength="48"
+            required
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="rg-field">
+          <ion-icon name="mail-outline" aria-hidden="true"></ion-icon>
+          <input
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="Correo electrónico"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            required
+          />
+        </div>
+
+        <!-- Password -->
+        <div class="rg-field">
+          <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            autocomplete="new-password"
+            placeholder="Contraseña (mínimo 6 caracteres)"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            required
+          />
+          <button
+            type="button"
+            class="rg-field__toggle"
+            (click)="togglePassword()"
+            [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          >
+            <ion-icon [name]="showPassword() ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
+          </button>
+        </div>
+
+        <!-- Confirm password -->
+        <div class="rg-field" [class.rg-field--mismatch]="confirmPassword().length > 0 && !passwordsMatch()">
+          <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
+          <input
+            [type]="showConfirm() ? 'text' : 'password'"
+            autocomplete="new-password"
+            placeholder="Repetir contraseña"
+            [ngModel]="confirmPassword()"
+            (ngModelChange)="confirmPassword.set($event)"
+            name="confirmPassword"
+            required
+          />
+          @if (passwordsMatch()) {
+            <span class="rg-field__match" aria-label="Coinciden">
+              <ion-icon name="checkmark" aria-hidden="true"></ion-icon>
+            </span>
+          }
+          <button
+            type="button"
+            class="rg-field__toggle"
+            (click)="toggleConfirm()"
+            [attr.aria-label]="showConfirm() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+          >
+            <ion-icon [name]="showConfirm() ? 'eye-outline' : 'eye-off-outline'"></ion-icon>
+          </button>
+        </div>
+
+        @if (confirmPassword().length > 0 && !passwordsMatch()) {
+          <p class="rg-hint rg-hint--error">Las contraseñas no coinciden.</p>
+        }
+
+        <!-- Legal acceptance -->
+        <div class="rg-legal">
+          <button
+            type="button"
+            class="rg-legal__check"
+            [class.rg-legal__check--on]="acceptedTerms()"
+            (click)="toggleTerms()"
+            [attr.aria-pressed]="acceptedTerms()"
+          >
+            <span class="rg-legal__box" aria-hidden="true">
+              @if (acceptedTerms()) {
+                <ion-icon name="checkmark"></ion-icon>
+              }
+            </span>
+            <span class="rg-legal__label">
+              Acepto los <strong>términos y condiciones</strong>, la
+              <strong>política de habeas data</strong> y el uso de
+              <strong>cookies</strong>.
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="rg-legal__expand"
+            (click)="toggleLegal()"
+            [attr.aria-expanded]="legalOpen()"
+          >
+            {{ legalOpen() ? 'Ocultar detalles' : 'Ver detalles' }}
+            <ion-icon
+              [name]="legalOpen() ? 'chevron-up-outline' : 'chevron-down-outline'"
+              aria-hidden="true"
+            ></ion-icon>
+          </button>
+
+          @if (legalOpen()) {
+            <div class="rg-legal__body tb-anim-fade">
+              <div class="rg-legal__section">
+                <h4>Términos y condiciones</h4>
+                <p>
+                  TODO BELT es una aplicación en fase de evaluación, no
+                  destinada actualmente a uso productivo. El uso es bajo tu
+                  propia responsabilidad. Te comprometes a darle un uso
+                  personal y respetuoso, sin afectar la experiencia de otros
+                  usuarios.
+                </p>
+              </div>
+
+              <div class="rg-legal__section">
+                <h4>Política de habeas data</h4>
+                <p>
+                  Tu información personal (nombre, apellidos, correo y datos
+                  de uso) se almacena en Firebase únicamente para
+                  personalizar tu experiencia dentro de la app. No
+                  compartimos tus datos con terceros. Puedes solicitar el
+                  acceso, corrección o eliminación de tu información
+                  escribiéndonos. Al continuar autorizas el tratamiento de
+                  tus datos personales con esa finalidad.
+                </p>
+              </div>
+
+              <div class="rg-legal__section">
+                <h4>Uso de cookies y almacenamiento local</h4>
+                <p>
+                  Guardamos algunos datos en tu dispositivo (localStorage y
+                  Capacitor Preferences) para mantenerte logueada y recordar
+                  tus preferencias entre sesiones. No usamos cookies de
+                  seguimiento publicitario. Firebase Analytics puede recoger
+                  métricas anónimas de uso para mejorar la app.
+                </p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="rg-submit"
+          [disabled]="!canSubmit()"
+        >
+          @if (loading()) {
+            <span class="rg-submit__spinner" aria-hidden="true"></span>
+          }
+          <span>Crear cuenta</span>
+          <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+        </button>
+      </form>
+
+      <p class="rg-footer">
+        ¿Ya tienes cuenta?
+        <button type="button" class="rg-footer__link" (click)="goLogin()">
+          Inicia sesión
+          <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+        </button>
+      </p>
+    </section>
+  </main>
+</ion-content>

@@ -21,6 +21,13 @@ export const routes: Routes = [
       import('@pages/login/login.page').then((m) => m.LoginPage),
   },
   {
+    path: 'register',
+    canActivate: [guestGuard],
+    data: { preload: false },
+    loadComponent: () =>
+      import('@pages/register/register.page').then((m) => m.RegisterPage),
+  },
+  {
     path: 'tabs',
     canActivate: [authGuard],
     loadComponent: () =>
