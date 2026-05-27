@@ -30,7 +30,18 @@ import { relativeDay } from '@core/helpers/date.helper';
       </button>
 
       <div class="tb-task__body">
-        <h4 class="tb-task__title">{{ task.title }}</h4>
+        <div class="tb-task__title-row">
+          <h4 class="tb-task__title">{{ task.title }}</h4>
+          @if (task.recurrence) {
+            <span
+              class="tb-task__repeat"
+              [attr.aria-label]="task.recurrence === 'daily' ? 'Tarea diaria' : 'Tarea semanal'"
+              [title]="task.recurrence === 'daily' ? 'Se repite diario' : 'Se repite semanal'"
+            >
+              <ion-icon name="repeat-outline" aria-hidden="true" />
+            </span>
+          }
+        </div>
 
         <div class="tb-task__meta">
           <span class="tb-task__chip" [style.color]="categoryAccent()">
