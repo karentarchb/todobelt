@@ -38,6 +38,10 @@ export class LoginPage {
     this.remember.update((v) => !v);
   }
 
+  goRegister(): void {
+    void this.router.navigateByUrl('/register');
+  }
+
   async submit(): Promise<void> {
     if (!this.canSubmit()) return;
     this.loading.set(true);
