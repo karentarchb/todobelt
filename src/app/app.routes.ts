@@ -58,6 +58,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('@pages/stats/stats.page').then((m) => m.StatsPage),
       },
+      {
+        // Reachable from TasksPage; also kept out of the tab bar.
+        path: 'categories',
+        loadComponent: () =>
+          import('@pages/categories/categories.page').then((m) => m.CategoriesPage),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'home' },
     ],
   },

@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, computed, inject } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
 import { Task } from '@core/models';
-import { CATEGORY_META } from '@core/constants/app.constants';
+import { CategoriesService } from '@core/services/categories.service';
+import { ACCENT_VAR } from '@core/constants/category-defaults.constants';
 import { relativeDay } from '@core/helpers/date.helper';
 
 @Component({
@@ -32,9 +33,9 @@ import { relativeDay } from '@core/helpers/date.helper';
         <h4 class="tb-task__title">{{ task.title }}</h4>
 
         <div class="tb-task__meta">
-          <span class="tb-task__chip" [style.color]="categoryAccent">
-            <ion-icon [name]="categoryIcon" aria-hidden="true" />
-            {{ categoryLabel }}
+          <span class="tb-task__chip" [style.color]="categoryAccent()">
+            <ion-icon [name]="categoryIcon()" aria-hidden="true" />
+            {{ categoryLabel() }}
           </span>
 
           @if (task.dueAt) {
@@ -55,19 +56,26 @@ import { relativeDay } from '@core/helpers/date.helper';
   `,
 })
 export class TaskCardComponent {
+  private readonly categoriesSvc = inject(CategoriesService);
+
   @Input({ required: true }) task!: Task;
 
   @Output() toggle = new EventEmitter<string>();
 
-  get categoryLabel(): string {
-    return CATEGORY_META[this.task.category].label;
-  }
-  get categoryIcon(): string {
-    return CATEGORY_META[this.task.category].icon;
-  }
-  get categoryAccent(): string {
-    return CATEGORY_META[this.task.category].accent;
-  }
+  /**
+   * Resolved category meta for this task. Falls back gracefully when
+   * the category id no longer exists (e.g. deleted by the user, even
+   * though the service prevents that for in-use categories).
+   */
+  readonly category = computed(() => this.categoriesSvc.byId(this.task?.category));
+
+  categoryLabel = () => this.category()?.name ?? 'Sin categoría';
+  categoryIcon = () => this.category()?.icon ?? 'pricetag-outline';
+  categoryAccent = () => {
+    const cat = this.category();
+    return cat ? ACCENT_VAR[cat.accent] : 'var(--tb-text-muted)';
+  };
+
   get due(): string {
     return relativeDay(this.task.dueAt);
   }

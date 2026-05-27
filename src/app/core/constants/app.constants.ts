@@ -47,19 +47,6 @@ export const DUE_BONUS_MINUTES = 15;
  */
 export const DAILY_COIN_CAP = 25;
 
-/** Categories meta */
-export const CATEGORY_META: Record<
-  'work' | 'personal' | 'health' | 'study' | 'home' | 'creative',
-  { label: string; icon: string; accent: string }
-> = {
-  work:     { label: 'Trabajo',  icon: 'briefcase-outline',      accent: 'var(--tb-blue)' },
-  personal: { label: 'Personal', icon: 'sparkles-outline',       accent: 'var(--tb-rose)' },
-  health:   { label: 'Salud',    icon: 'heart-outline',          accent: 'var(--tb-green)' },
-  study:    { label: 'Estudio',  icon: 'book-outline',           accent: 'var(--tb-purple)' },
-  home:     { label: 'Hogar',    icon: 'home-outline',           accent: 'var(--tb-yellow)' },
-  creative: { label: 'Creativo', icon: 'color-palette-outline',  accent: 'var(--tb-rose-soft)' },
-};
-
 export const MOODS: Array<{
   key: 'great' | 'good' | 'meh' | 'low' | 'tired';
   label: string;

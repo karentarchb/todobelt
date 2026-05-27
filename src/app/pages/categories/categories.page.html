@@ -1,0 +1,163 @@
+<ion-header class="tb-clean">
+  <ion-toolbar>
+    <div class="cg-top">
+      <button type="button" class="cg-back" (click)="goBack()" aria-label="Volver">
+        <ion-icon name="chevron-back" aria-hidden="true"></ion-icon>
+      </button>
+      <h1 class="cg-top__title">Categorías</h1>
+      <button type="button" class="cg-back cg-back--accent" (click)="openCreate()" aria-label="Crear categoría">
+        <ion-icon name="add" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <p class="cg-lead">
+    Organiza tus tareas con tus propias etiquetas. Las predeterminadas se pueden
+    editar pero no eliminar.
+  </p>
+
+  @if (categories().length) {
+    <div class="cg-list tb-stagger">
+      @for (c of categories(); track c.id) {
+        <article class="cg-item">
+          <span class="cg-item__icon" [style.color]="accentVar(c.accent)">
+            <ion-icon [name]="c.icon" aria-hidden="true"></ion-icon>
+          </span>
+
+          <div class="cg-item__body">
+            <div class="cg-item__title-row">
+              <h3 class="cg-item__name">{{ c.name }}</h3>
+              @if (c.isDefault) {
+                <span class="cg-item__badge">Predeterminada</span>
+              }
+            </div>
+            <p class="cg-item__meta">
+              {{ taskCountFor(c.id) }}
+              {{ taskCountFor(c.id) === 1 ? 'tarea' : 'tareas' }}
+            </p>
+          </div>
+
+          <div class="cg-item__actions">
+            <button
+              type="button"
+              class="cg-iconbtn"
+              (click)="openEdit(c)"
+              aria-label="Editar categoría"
+            >
+              <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+            </button>
+            <button
+              type="button"
+              class="cg-iconbtn cg-iconbtn--danger"
+              [disabled]="c.isDefault"
+              (click)="confirmDelete(c)"
+              [attr.aria-label]="c.isDefault ? 'Predeterminada, no se puede eliminar' : 'Eliminar categoría'"
+            >
+              <ion-icon name="trash-outline" aria-hidden="true"></ion-icon>
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  } @else {
+    <tb-empty-state
+      icon="pricetags-outline"
+      title="Aún sin categorías"
+      description="Crea tu primera categoría para empezar a organizar tus tareas."
+    >
+      <div class="cg-empty-cta">
+        <tb-primary-button (pressed)="openCreate()">Crear categoría</tb-primary-button>
+      </div>
+    </tb-empty-state>
+  }
+
+  <div class="cg-tail"></div>
+</ion-content>
+
+<!-- ============ Editor sheet ============ -->
+<ion-modal
+  [isOpen]="editorOpen()"
+  (didDismiss)="closeEditor()"
+  [breakpoints]="[0, 1]"
+  [initialBreakpoint]="1"
+  handle="true"
+>
+  <ng-template>
+    <div class="cg-sheet">
+      <header class="cg-sheet__head">
+        <h2>{{ editorMode() === 'create' ? 'Nueva categoría' : 'Editar categoría' }}</h2>
+        <p>Dale un nombre, un icono y un color que la identifiquen.</p>
+      </header>
+
+      <label class="cg-field">
+        <span class="cg-field__label">Nombre</span>
+        <input
+          type="text"
+          class="cg-field__input"
+          placeholder="Ej. Lectura, Familia, Finanzas..."
+          [ngModel]="draftName()"
+          (ngModelChange)="draftName.set($event)"
+          maxlength="32"
+          autofocus
+        />
+      </label>
+
+      <div class="cg-field">
+        <span class="cg-field__label">Color</span>
+        <div class="cg-accents">
+          @for (a of accentOptions; track a) {
+            <button
+              type="button"
+              class="cg-accent"
+              [class.cg-accent--active]="draftAccent() === a"
+              [style.background]="accentVar(a)"
+              [attr.aria-label]="'Color ' + a"
+              (click)="draftAccent.set(a)"
+            ></button>
+          }
+        </div>
+      </div>
+
+      <div class="cg-field">
+        <span class="cg-field__label">Icono</span>
+        <div class="cg-icons">
+          @for (icon of iconOptions; track icon) {
+            <button
+              type="button"
+              class="cg-iconchoice"
+              [class.cg-iconchoice--active]="draftIcon() === icon"
+              [style.color]="accentVar(draftAccent())"
+              (click)="draftIcon.set(icon)"
+              [attr.aria-label]="'Icono ' + icon"
+            >
+              <ion-icon [name]="icon" aria-hidden="true"></ion-icon>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Live preview -->
+      <div class="cg-preview" aria-label="Vista previa">
+        <span class="cg-preview__icon" [style.color]="accentVar(draftAccent())">
+          <ion-icon [name]="draftIcon()" aria-hidden="true"></ion-icon>
+        </span>
+        <span class="cg-preview__name">{{ draftName() || 'Vista previa' }}</span>
+      </div>
+
+      <div class="cg-sheet__actions">
+        <button type="button" class="cg-sheet__cancel" (click)="closeEditor()">
+          Cancelar
+        </button>
+        <tb-primary-button
+          [disabled]="!canSave()"
+          [loading]="saving()"
+          (pressed)="save()"
+        >
+          {{ editorMode() === 'create' ? 'Crear' : 'Guardar' }}
+        </tb-primary-button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>
