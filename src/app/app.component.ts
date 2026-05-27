@@ -61,6 +61,7 @@ import { OnboardingService } from '@core/services/onboarding.service';
 import { AuthService } from '@core/services/auth.service';
 import { WalletService } from '@core/services/wallet.service';
 import { MoodService } from '@core/services/mood.service';
+import { FeatureFlagsService } from '@core/services/feature-flags.service';
 
 @Component({
   selector: 'app-root',
@@ -77,6 +78,7 @@ export class AppComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly wallet = inject(WalletService);
   private readonly mood = inject(MoodService);
+  private readonly featureFlags = inject(FeatureFlagsService);
 
   constructor() {
     addIcons({
@@ -146,6 +148,7 @@ export class AppComponent implements OnInit {
       this.auth.hydrate(),
       this.wallet.hydrate(),
       this.mood.hydrate(),
+      this.featureFlags.hydrate(),
     ]);
   }
 }
