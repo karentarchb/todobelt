@@ -142,7 +142,13 @@
       <!-- Templates: only when creating, not editing -->
       @if (!editingId() && templates.length) {
         <div class="tk-field">
-          <span class="tk-field__label">O elige una plantilla</span>
+          <span class="tk-field__label">
+            O elige una plantilla
+            <span class="tk-field__scroll-hint" aria-hidden="true">
+              desliza
+              <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+            </span>
+          </span>
           <div class="tk-templates__row">
             @for (t of templates; track t.id) {
               <button
