@@ -49,8 +49,27 @@ ion-toolbar {
   --min-height: 56px;
 }
 
+/*
+ * Glass header. All pages render their content with [fullscreen]="true",
+ * so the page body scrolls BEHIND the toolbar. A fully transparent toolbar
+ * caused the greeting / title text to collide visually with the scrolling
+ * content. The frosted backdrop keeps the toolbar legible while still
+ * letting the dark page color show through, and a hairline border anchors
+ * it once the user scrolls past the top.
+ */
 ion-header.tb-clean ion-toolbar {
-  --background: transparent;
+  --background: rgba(5, 5, 5, 0.72);
+  --border-color: var(--tb-border);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  backdrop-filter: saturate(160%) blur(18px);
+}
+
+/* Older WebViews without backdrop-filter fall back to an opaque surface
+   so content never bleeds through. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  ion-header.tb-clean ion-toolbar {
+    --background: var(--tb-bg-1);
+  }
 }
 
 ion-content {
