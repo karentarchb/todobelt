@@ -4,6 +4,7 @@ import { Task } from '@core/models';
 import { CategoriesService } from '@core/services/categories.service';
 import { ACCENT_VAR } from '@core/constants/category-defaults.constants';
 import { relativeDay } from '@core/helpers/date.helper';
+import { formatDays } from '@core/helpers/weekday.helper';
 
 @Component({
   selector: 'tb-task-card',
@@ -54,6 +55,11 @@ import { relativeDay } from '@core/helpers/date.helper';
             <span class="tb-task__due">{{ due }}</span>
           }
 
+          @if (daysLabel) {
+            <span class="tb-task__sep" aria-hidden="true">·</span>
+            <span class="tb-task__days">{{ daysLabel }}</span>
+          }
+
           <span class="tb-task__sep" aria-hidden="true">·</span>
           <span class="tb-task__reward">
             <span class="tb-task__reward-dot" aria-hidden="true"></span>
@@ -91,6 +97,13 @@ export class TaskCardComponent {
     const cat = this.category();
     return cat ? ACCENT_VAR[cat.accent] : 'var(--tb-text-muted)';
   };
+
+  get daysLabel(): string {
+    // Only render the day list for weekly tasks — daily ones already say
+    // 'every day' implicitly via the small repeat icon.
+    if (this.task?.recurrence !== 'weekly') return '';
+    return formatDays(this.task?.recurrenceDays);
+  }
 
   get due(): string {
     if (!this.task.dueAt) return '';

@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { FirestoreTasksService } from './firestore-tasks.service';
 import { NotificationService } from './notification.service';
 import { WalletService } from './wallet.service';
+import { nextDateOnDays } from '../helpers/weekday.helper';
 
 export type ToggleReason =
   | 'ok'        // full reward granted
@@ -102,6 +103,7 @@ export class TasksService {
     if (input.notes?.trim()) base.notes = input.notes.trim();
     if (input.dueAt) base.dueAt = input.dueAt;
     if (input.recurrence) base.recurrence = input.recurrence;
+    if (input.recurrenceDays?.length) base.recurrenceDays = input.recurrenceDays;
 
     const newId = await this.fsTasks.add(user.id, base);
 
@@ -138,6 +140,7 @@ export class TasksService {
     }
     if (patch.dueAt !== undefined) cleanPatch.dueAt = patch.dueAt;
     if (patch.recurrence !== undefined) cleanPatch.recurrence = patch.recurrence;
+    if (patch.recurrenceDays !== undefined) cleanPatch.recurrenceDays = patch.recurrenceDays;
 
     await this.fsTasks.update(user.id, id, cleanPatch);
 
@@ -259,7 +262,7 @@ export class TasksService {
    */
   private async cycleRecurrence(prev: Task): Promise<void> {
     await this.notifications.cancelForTask(prev.id);
-    const nextDue = this.computeNextDue(prev.dueAt, prev.recurrence);
+    const nextDue = this.computeNextDue(prev);
     if (!nextDue) return;
     await this.add({
       title: prev.title,
@@ -268,16 +271,39 @@ export class TasksService {
       priority: prev.priority,
       dueAt: nextDue,
       recurrence: prev.recurrence,
+      ...(prev.recurrenceDays?.length ? { recurrenceDays: prev.recurrenceDays } : {}),
     });
   }
 
-  private computeNextDue(dueAt: string | undefined, recurrence: Task['recurrence']): string | undefined {
-    if (!dueAt) return undefined;
-    const d = new Date(dueAt);
-    if (recurrence === 'daily') d.setDate(d.getDate() + 1);
-    else if (recurrence === 'weekly') d.setDate(d.getDate() + 7);
-    else return undefined;
-    return d.toISOString();
+  /**
+   * Where does the next occurrence land?
+   *   - daily: tomorrow at the same time
+   *   - weekly + recurrenceDays: the next allowed weekday at the same time
+   *   - weekly without days: same weekday next week (legacy behavior)
+   */
+  private computeNextDue(task: Task): string | undefined {
+    if (!task.dueAt) return undefined;
+    const base = new Date(task.dueAt);
+
+    if (task.recurrence === 'daily') {
+      base.setDate(base.getDate() + 1);
+      return base.toISOString();
+    }
+
+    if (task.recurrence === 'weekly') {
+      if (task.recurrenceDays?.length) {
+        const hours = base.getHours();
+        const minutes = base.getMinutes();
+        const next = nextDateOnDays(base, task.recurrenceDays);
+        next.setHours(hours, minutes, 0, 0);
+        return next.toISOString();
+      }
+      // Legacy fallback: no day list → repeat in 7 days.
+      base.setDate(base.getDate() + 7);
+      return base.toISOString();
+    }
+
+    return undefined;
   }
 
   private todayAt(hhmm: string): string {
