@@ -54,13 +54,18 @@ export const routes: Routes = [
       {
         // Reachable from Home — intentionally not added to the tab bar so
         // the bottom menu stays focused on the five primary destinations.
+        // Opt out of preloading: most users will never open Stats in
+        // their first session.
         path: 'stats',
+        data: { preload: false },
         loadComponent: () =>
           import('@pages/stats/stats.page').then((m) => m.StatsPage),
       },
       {
         // Reachable from TasksPage; also kept out of the tab bar.
+        // Opt out of preloading for the same reason as Stats.
         path: 'categories',
+        data: { preload: false },
         loadComponent: () =>
           import('@pages/categories/categories.page').then((m) => m.CategoriesPage),
       },
