@@ -128,6 +128,13 @@
   font-weight: 500;
 }
 
+.tb-task__days {
+  display: inline-flex;
+  align-items: center;
+  color: var(--tb-rose);
+  font-weight: 500;
+}
+
 .tb-task__reward-dot {
   width: 6px;
   height: 6px;
