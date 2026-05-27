@@ -698,11 +698,19 @@ El bundle generado se deposita en `www/`. Puedes desplegarlo en:
 
 ### 6.8 Compilar para Android
 
+El proyecto soporta dos rutas de compilación nativa para Android. Las
+dos producen un APK funcional; elige la que mejor se adapte al pipeline
+del equipo. La de Capacitor es la opción principal (las APIs del código
+están escritas contra plugins de Capacitor); la de Cordova queda
+disponible como alternativa estándar.
+
+#### Vía A — Capacitor en Android (recomendada)
+
 ```bash
 # 1. Build de producción del web
 npm run build
 
-# 2. Agregar plataforma Android (sólo una vez)
+# 2. Agregar la plataforma Android (sólo una vez)
 npx cap add android
 
 # 3. Sincronizar web → native cada vez que cambies código
@@ -719,12 +727,53 @@ Dentro de Android Studio:
   Bundle / APK**.
 
 > El plugin de Local Notifications requiere permisos declarados en
-> `AndroidManifest.xml`. Capacitor los agrega automáticamente al hacer
-> `cap sync` la primera vez.
+> `AndroidManifest.xml`. Capacitor los agrega automáticamente en el
+> primer `cap sync`.
+
+#### Vía B — Cordova en Android
+
+Requiere Cordova CLI instalado globalmente:
+
+```bash
+npm install -g cordova
+```
+
+Comandos:
+
+```bash
+# 1. Build de producción del web
+npm run build
+
+# 2. Agregar la plataforma Android (sólo una vez)
+ionic cordova platform add android
+
+# 3. Build del APK
+npm run cordova:android
+#   equivale a: ionic cordova build android
+#   release firmado: ionic cordova build android --prod --release
+
+# 4. Ejecutar en un dispositivo USB
+npm run cordova:android:run
+
+# 5. Ejecutar en un emulador AVD ya creado
+npm run cordova:android:emulate
+```
+
+El APK resultante se deposita en
+`platforms/android/app/build/outputs/apk/`. El proyecto Android nativo
+queda en `platforms/android/` y puede abrirse en Android Studio (`File
+→ Open → seleccionar la carpeta`) para depuración avanzada o firmas
+manuales.
+
+> Los plugins Cordova declarados en `config.xml` se instalan automáticamente
+> al ejecutar `ionic cordova prepare` o cualquier `build`. Las carpetas
+> `platforms/` y `plugins/` están en `.gitignore`; no se comitean.
 
 ### 6.9 Compilar para iOS
 
-Sólo en macOS con Xcode instalado.
+Sólo en macOS con Xcode 15+ instalado.
+
+#### Vía A — Capacitor en iOS (recomendada)
 
 ```bash
 npm run build
@@ -740,8 +789,39 @@ En Xcode:
 - Para **publicar a App Store**: **Product → Archive**.
 
 > **Apple Sign-In** requiere habilitar la capability "Sign in with
-> Apple" en Xcode y configurar el Service ID en Apple Developer
-> Console.
+> Apple" en Xcode y configurar el Service ID en Apple Developer Console.
+
+#### Vía B — Cordova en iOS
+
+```bash
+# 1. Build de producción del web
+npm run build
+
+# 2. Agregar la plataforma iOS (sólo una vez)
+ionic cordova platform add ios
+
+# 3. Build del IPA
+npm run cordova:ios
+#   release firmado: ionic cordova build ios --prod --release
+
+# 4. Ejecutar en un dispositivo conectado por cable
+npm run cordova:ios:run
+
+# 5. Ejecutar en el simulador de iOS
+npm run cordova:ios:emulate
+```
+
+El workspace de Xcode se genera en `platforms/ios/`. Para firmar y
+archivar para la App Store, abre el `.xcworkspace` desde ahí, configura
+el equipo en **Signing & Capabilities** y usa **Product → Archive**.
+
+> Limitación conocida: el servicio de notificaciones de la app
+> (`NotificationService`) usa `@capacitor/local-notifications`. En un
+> build de Cordova el plugin nativo de Capacitor no estará disponible,
+> por lo que las notificaciones caen al fallback web (sólo disparan con
+> la app abierta). Si se necesita scheduling OS-level con Cordova,
+> hay que añadir `cordova-plugin-local-notification` y bifurcar el
+> servicio detrás de una detección de plataforma.
 
 ### 6.10 Solución de problemas comunes
 

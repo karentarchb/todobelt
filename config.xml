@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="app.todobelt"
+        version="1.0.0"
+        xmlns="http://www.w3.org/ns/widgets"
+        xmlns:cdv="http://cordova.apache.org/ns/1.0">
+
+  <name>TODO BELT</name>
+  <description>Productividad amable, enfocada y motivadora.</description>
+  <author email="karen.tarchb@gmail.com" href="https://github.com/karentarchb/todobelt">
+    Karen Torres Archbold
+  </author>
+
+  <content src="index.html" />
+
+  <!-- Networking & intent whitelist -->
+  <access origin="*" />
+  <allow-intent href="http://*/*" />
+  <allow-intent href="https://*/*" />
+  <allow-intent href="tel:*" />
+  <allow-intent href="sms:*" />
+  <allow-intent href="mailto:*" />
+  <allow-intent href="geo:*" />
+
+  <!-- The web build output that Cordova should copy into each platform.
+       Matches Angular's outputPath in angular.json. -->
+  <preference name="ScrollEnabled" value="false" />
+  <preference name="android-minSdkVersion" value="22" />
+  <preference name="android-targetSdkVersion" value="34" />
+  <preference name="BackupWebStorage" value="none" />
+  <preference name="StatusBarOverlaysWebView" value="false" />
+  <preference name="StatusBarBackgroundColor" value="#050505" />
+  <preference name="StatusBarStyle" value="lightcontent" />
+  <preference name="SplashScreen" value="screen" />
+  <preference name="SplashScreenDelay" value="1500" />
+  <preference name="FadeSplashScreenDuration" value="300" />
+  <preference name="AutoHideSplashScreen" value="true" />
+  <preference name="SplashMaintainAspectRatio" value="true" />
+  <preference name="SplashShowOnlyFirstTime" value="false" />
+
+  <!-- Android-specific preferences and intents -->
+  <platform name="android">
+    <allow-intent href="market:*" />
+    <preference name="AndroidPersistentFileLocation" value="Compatibility" />
+    <preference name="AndroidLaunchMode" value="singleTask" />
+  </platform>
+
+  <!-- iOS-specific intents -->
+  <platform name="ios">
+    <allow-intent href="itms:*" />
+    <allow-intent href="itms-apps:*" />
+    <preference name="WKWebViewOnly" value="true" />
+    <preference name="deployment-target" value="13.0" />
+  </platform>
+
+  <!-- Cordova core plugins that the app expects to be installed when
+       building with `ionic cordova build`. These are equivalents to the
+       Capacitor counterparts used in the JS code; install with
+       `ionic cordova plugin add <name>` after running `cordova prepare`. -->
+  <plugin name="cordova-plugin-whitelist" spec="^1.3.5" />
+  <plugin name="cordova-plugin-statusbar" spec="^4.0.0" />
+  <plugin name="cordova-plugin-device" spec="^3.0.0" />
+  <plugin name="cordova-plugin-splashscreen" spec="^6.0.2" />
+  <plugin name="cordova-plugin-ionic-webview" spec="^5.0.1" />
+  <plugin name="cordova-plugin-ionic-keyboard" spec="^2.2.0" />
+
+</widget>

@@ -1,7 +1,8 @@
 {
   "name": "todo-belt",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {},
+    "cordova": {}
   },
   "type": "angular-standalone"
 }

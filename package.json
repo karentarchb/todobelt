@@ -13,7 +13,13 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
-    "sync": "ionic build && cap sync"
+    "sync": "ionic build && cap sync",
+    "cordova:android": "ionic cordova build android",
+    "cordova:android:run": "ionic cordova run android",
+    "cordova:android:emulate": "ionic cordova emulate android",
+    "cordova:ios": "ionic cordova build ios",
+    "cordova:ios:run": "ionic cordova run ios",
+    "cordova:ios:emulate": "ionic cordova emulate ios"
   },
   "private": true,
   "dependencies": {
@@ -49,5 +55,16 @@
     "@ionic/angular-toolkit": "^11.0.1",
     "@types/node": "^20.10.0",
     "typescript": "~5.6.0"
+  },
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-ionic-webview": {},
+      "cordova-plugin-ionic-keyboard": {}
+    },
+    "platforms": []
   }
 }
