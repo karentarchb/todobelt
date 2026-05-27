@@ -120,7 +120,11 @@
   @if (visible().length) {
     <div class="tk-list tb-stagger">
       @for (t of visible(); track t.id) {
-        <tb-task-card [task]="t" (toggle)="toggleTask($event)"></tb-task-card>
+        <tb-task-card
+          [task]="t"
+          (toggle)="toggleTask($event)"
+          (action)="openActions($event)"
+        ></tb-task-card>
       }
     </div>
   } @else {
@@ -149,8 +153,12 @@
   <ng-template>
     <div class="tk-sheet">
       <header class="tk-sheet__head">
-        <h2>Nueva tarea</h2>
-        <p>Tómate un momento para pensarla con calma.</p>
+        <h2>{{ editingId() ? 'Editar tarea' : 'Nueva tarea' }}</h2>
+        <p>
+          {{ editingId()
+              ? 'Ajusta los detalles que necesites.'
+              : 'Tómate un momento para pensarla con calma.' }}
+        </p>
       </header>
 
       <label class="tk-field">
@@ -215,7 +223,7 @@
           [disabled]="!draftTitle().trim()"
           (pressed)="submit()"
         >
-          Crear tarea
+          {{ editingId() ? 'Guardar cambios' : 'Crear tarea' }}
         </tb-primary-button>
       </div>
     </div>

@@ -112,6 +112,26 @@ export class TasksService {
     });
   }
 
+  async update(id: string, patch: NewTaskInput): Promise<void> {
+    const user = this.auth.user();
+    if (!user) return;
+
+    // Build a minimal patch only with fields the user actually edited.
+    // createdAt is intentionally NOT included — Firestore rules forbid
+    // changing it. If priority changes, the base reward is recomputed.
+    const cleanPatch: Partial<Task> = {};
+    if (patch.title !== undefined) cleanPatch.title = patch.title.trim();
+    if (patch.notes !== undefined) cleanPatch.notes = patch.notes.trim();
+    if (patch.category !== undefined) cleanPatch.category = patch.category;
+    if (patch.priority !== undefined) {
+      cleanPatch.priority = patch.priority;
+      cleanPatch.reward = TASK_REWARD[patch.priority];
+    }
+    if (patch.dueAt !== undefined) cleanPatch.dueAt = patch.dueAt;
+
+    await this.fsTasks.update(user.id, id, cleanPatch);
+  }
+
   async remove(id: string): Promise<void> {
     const user = this.auth.user();
     if (!user) return;
