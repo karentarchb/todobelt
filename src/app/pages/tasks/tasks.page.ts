@@ -13,6 +13,10 @@ import { CategoriesService } from '@core/services/categories.service';
 import { Task, TaskCategoryId, TaskPriority, TaskTemplate } from '@core/models';
 import { ACCENT_VAR } from '@core/constants/category-defaults.constants';
 import { flashToggle } from '@core/helpers/toggle-feedback.helper';
+import {
+  WEEKDAYS_MON_FIRST,
+  WEEKDAY_PRESETS,
+} from '@core/helpers/weekday.helper';
 
 import { TaskCardComponent } from '@shared/components/task-card/task-card.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
@@ -54,6 +58,9 @@ export class TasksPage {
   /** Time-of-day picker value (HH:mm). Empty string = no specific time. */
   readonly draftDueTime = signal<string>('');
   readonly draftRecurrence = signal<'none' | 'daily' | 'weekly'>('none');
+  readonly draftDays = signal<number[]>([]);
+
+  readonly weekdayChoices = WEEKDAYS_MON_FIRST;
 
   readonly categories = this.categoriesSvc.categories;
 
@@ -192,6 +199,7 @@ export class TasksPage {
     this.draftPriority.set('medium');
     this.draftDueTime.set('');
     this.draftRecurrence.set('none');
+    this.draftDays.set([]);
     this.showAdd.set(true);
   }
 
@@ -202,7 +210,26 @@ export class TasksPage {
     this.draftPriority.set(task.priority);
     this.draftDueTime.set(this.extractTime(task.dueAt));
     this.draftRecurrence.set(task.recurrence ?? 'none');
+    this.draftDays.set(task.recurrenceDays ?? []);
     this.showAdd.set(true);
+  }
+
+  toggleDay(day: number): void {
+    this.draftDays.update((current) =>
+      current.includes(day) ? current.filter((d) => d !== day) : [...current, day].sort((a, b) => a - b),
+    );
+  }
+
+  applyWeekdaysPreset(): void {
+    this.draftDays.set([...WEEKDAY_PRESETS.WEEKDAYS]);
+  }
+
+  applyWeekendsPreset(): void {
+    this.draftDays.set([...WEEKDAY_PRESETS.WEEKENDS]);
+  }
+
+  applyEverydayPreset(): void {
+    this.draftDays.set([...WEEKDAY_PRESETS.EVERYDAY]);
   }
 
   closeAdd(): void {
@@ -218,6 +245,7 @@ export class TasksPage {
     this.draftPriority.set(template.priority);
     this.draftDueTime.set(template.defaultTime ?? '');
     this.draftRecurrence.set(template.recurrence ?? 'none');
+    this.draftDays.set(template.recurrenceDays ?? []);
   }
 
   async submit(): Promise<void> {
@@ -227,6 +255,8 @@ export class TasksPage {
     const dueAt = this.draftDueTime() ? this.todayAt(this.draftDueTime()) : undefined;
     const rec = this.draftRecurrence();
     const recurrence = rec === 'none' ? undefined : rec;
+    // Days only matter for weekly recurrence — drop them otherwise.
+    const recurrenceDays = rec === 'weekly' && this.draftDays().length ? this.draftDays() : undefined;
 
     const id = this.editingId();
     if (id) {
@@ -236,6 +266,7 @@ export class TasksPage {
         priority: this.draftPriority(),
         dueAt,
         recurrence,
+        recurrenceDays,
       });
     } else {
       await this.tasksSvc.add({
@@ -244,6 +275,7 @@ export class TasksPage {
         priority: this.draftPriority(),
         dueAt,
         recurrence,
+        recurrenceDays,
       });
     }
     this.closeAdd();

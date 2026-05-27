@@ -380,6 +380,70 @@
   opacity: 0.78;
 }
 
+/* -------- Weekday picker (only for weekly recurrence) -------- */
+.tk-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.tk-day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  background: var(--tb-bg-3);
+  border: 1px solid var(--tb-border);
+  border-radius: 10px;
+  color: var(--tb-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background var(--tb-dur-fast) var(--tb-ease),
+    border-color var(--tb-dur-fast) var(--tb-ease),
+    color var(--tb-dur-fast) var(--tb-ease),
+    transform var(--tb-dur-fast) var(--tb-ease);
+
+  &:hover { background: var(--tb-bg-4); color: var(--tb-text); }
+  &:active { transform: scale(0.94); }
+}
+
+.tk-day--active {
+  background: rgba(255, 79, 163, 0.14);
+  border-color: rgba(255, 79, 163, 0.40);
+  color: var(--tb-rose);
+}
+
+.tk-day-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tk-day-preset {
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px dashed var(--tb-border-strong);
+  border-radius: var(--tb-r-pill);
+  color: var(--tb-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background var(--tb-dur-fast) var(--tb-ease),
+    color var(--tb-dur-fast) var(--tb-ease),
+    border-color var(--tb-dur-fast) var(--tb-ease);
+
+  &:hover {
+    background: var(--tb-bg-3);
+    color: var(--tb-text);
+    border-color: var(--tb-border-strong);
+  }
+}
+
 /* -------- Time picker -------- */
 .tk-time {
   width: 100%;

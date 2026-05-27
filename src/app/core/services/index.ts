@@ -14,6 +14,7 @@ export * from './tasks.service';
 export * from './stats.service';
 export * from './categories.service';
 export * from './notification.service';
+export * from './feature-flags.service';
 export * from './rewards.service';
 export * from './wallet.service';
 export * from './mood.service';

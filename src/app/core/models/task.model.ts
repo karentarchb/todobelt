@@ -31,6 +31,16 @@ export interface Task {
   done: boolean;
   /** When set, the task repeats on this cadence. */
   recurrence?: TaskRecurrence;
+  /**
+   * Days of the week the task should repeat on, when recurrence is 'weekly'.
+   * 0 = Sunday, 1 = Monday, ..., 6 = Saturday (matches Date.getDay()).
+   * Common presets:
+   *   - [1,2,3,4,5]   Weekdays (L-V)
+   *   - [0,6]         Weekends (S-D)
+   *   - [1,3,5]       Mon/Wed/Fri
+   * Ignored when recurrence is 'daily' or absent.
+   */
+  recurrenceDays?: number[];
 }
 
 export interface NewTaskInput {
@@ -41,6 +51,7 @@ export interface NewTaskInput {
   dueAt?: string;
   reward?: number;
   recurrence?: TaskRecurrence;
+  recurrenceDays?: number[];
 }
 
 /**
@@ -60,4 +71,6 @@ export interface TaskTemplate {
   hint?: string;
   /** Default recurrence to apply when this template is used. */
   recurrence?: TaskRecurrence;
+  /** Default weekday selection for weekly templates. */
+  recurrenceDays?: number[];
 }

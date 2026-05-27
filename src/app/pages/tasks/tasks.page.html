@@ -230,6 +230,40 @@
         </div>
       </div>
 
+      <!-- Weekday picker only relevant for weekly recurrence -->
+      @if (draftRecurrence() === 'weekly') {
+        <div class="tk-field tb-anim-fade">
+          <span class="tk-field__label">Días de la semana</span>
+
+          <div class="tk-days">
+            @for (w of weekdayChoices; track w.index) {
+              <button
+                type="button"
+                class="tk-day"
+                [class.tk-day--active]="draftDays().includes(w.index)"
+                [attr.aria-pressed]="draftDays().includes(w.index)"
+                [attr.aria-label]="w.label"
+                (click)="toggleDay(w.index)"
+              >
+                {{ w.short }}
+              </button>
+            }
+          </div>
+
+          <div class="tk-day-presets">
+            <button type="button" class="tk-day-preset" (click)="applyWeekdaysPreset()">
+              L-V
+            </button>
+            <button type="button" class="tk-day-preset" (click)="applyWeekendsPreset()">
+              Fines de semana
+            </button>
+            <button type="button" class="tk-day-preset" (click)="applyEverydayPreset()">
+              Todos los días
+            </button>
+          </div>
+        </div>
+      }
+
       <div class="tk-field">
         <span class="tk-field__label">Categoría</span>
         <div class="tk-chips">
