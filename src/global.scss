@@ -170,11 +170,13 @@ ion-modal {
   --border-radius: var(--tb-r-xl);
 }
 
-ion-loading,
-ion-toast,
-ion-alert {
+/* Generic overlay defaults — ion-loading uses these. Specific overrides
+   for action-sheet / alert / toast with the tb-* cssClass are at the
+   bottom of this file. */
+ion-loading {
   --background: var(--tb-bg-3);
   --color: var(--tb-text-strong);
+  --spinner-color: var(--tb-rose);
 }
 
 /* -------- Tab bar -------- */
@@ -193,4 +195,123 @@ ion-tab-button {
   --color-selected: var(--tb-rose);
   font-size: 11px;
   font-weight: 500;
+}
+
+/* ============================================================
+   Ionic overlay overrides — keep action sheets, alerts and
+   toasts on-brand (dark surface, rose accents).
+   These styles MUST live at the global level because Ionic
+   renders overlays in a portal outside the component tree,
+   so component-scoped CSS never reaches them.
+   ============================================================ */
+
+/* -------- Action sheet (.tb-action-sheet) -------- */
+ion-action-sheet.tb-action-sheet {
+  --background: var(--tb-bg-3);
+  --backdrop-opacity: 0.65;
+  --button-background: transparent;
+  --button-background-selected: rgba(255, 255, 255, 0.05);
+  --button-color: var(--tb-text-strong);
+  --button-color-selected: var(--tb-text-strong);
+  --color: var(--tb-text-muted);
+}
+
+ion-action-sheet.tb-action-sheet::part(wrapper) {
+  border-radius: var(--tb-r-lg);
+  overflow: hidden;
+}
+
+ion-action-sheet.tb-action-sheet::part(group),
+ion-action-sheet.tb-action-sheet::part(group-cancel) {
+  background: var(--tb-bg-3);
+}
+
+ion-action-sheet.tb-action-sheet::part(title),
+ion-action-sheet.tb-action-sheet::part(sub-title) {
+  color: var(--tb-text-strong);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+ion-action-sheet.tb-action-sheet::part(button) {
+  color: var(--tb-text-strong);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  border-color: var(--tb-border) !important;
+}
+
+ion-action-sheet.tb-action-sheet::part(button-cancel) {
+  color: var(--tb-text-muted);
+  background: var(--tb-bg-3);
+}
+
+ion-action-sheet.tb-action-sheet::part(button-destructive) {
+  color: var(--tb-danger);
+}
+
+ion-action-sheet.tb-action-sheet::part(icon) {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* -------- Alert (.tb-alert) -------- */
+ion-alert.tb-alert {
+  --background: var(--tb-bg-3);
+  --backdrop-opacity: 0.65;
+}
+
+ion-alert.tb-alert::part(wrapper) {
+  background: var(--tb-bg-3);
+  border: 1px solid var(--tb-border-strong);
+  border-radius: var(--tb-r-lg);
+}
+
+ion-alert.tb-alert::part(head),
+ion-alert.tb-alert::part(title) {
+  color: var(--tb-text-strong);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+ion-alert.tb-alert::part(sub-title),
+ion-alert.tb-alert::part(message) {
+  color: var(--tb-text-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+ion-alert.tb-alert::part(button) {
+  color: var(--tb-rose);
+  font-weight: 500;
+  border-color: var(--tb-border) !important;
+}
+
+ion-alert.tb-alert::part(button-role-destructive),
+ion-alert.tb-alert .alert-button.alert-button-role-destructive {
+  color: var(--tb-danger) !important;
+}
+
+/* -------- Toast (.tb-toast) -------- */
+ion-toast.tb-toast {
+  --background: var(--tb-bg-3);
+  --color: var(--tb-text-strong);
+  --border-color: var(--tb-border-strong);
+  --border-width: 1px;
+  --border-style: solid;
+  --border-radius: var(--tb-r-md);
+  --box-shadow: var(--tb-shadow-md);
+  --max-width: 92vw;
+  font-size: 13.5px;
+}
+
+ion-toast.tb-toast::part(message) {
+  color: var(--tb-text-strong);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+ion-toast.tb-toast::part(button) {
+  color: var(--tb-rose);
+  font-weight: 600;
 }
