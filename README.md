@@ -52,6 +52,10 @@ notificaciones nativas vía Capacitor.
 9. [Historial de releases](#9-historial-de-releases)
 10. [Flujo de Git](#10-flujo-de-git)
 11. [Decisiones de diseño](#11-decisiones-de-diseño)
+12. [Respondiendo preguntas](#12-respondiendo-preguntas)
+    - [12.1 Principales desafíos](#121-cuáles-fueron-los-principales-desafíos-al-implementar-las-nuevas-funcionalidades)
+    - [12.2 Técnicas de optimización](#122-qué-técnicas-de-optimización-de-rendimiento-aplicaste-y-por-qué)
+    - [12.3 Calidad y mantenibilidad](#123-cómo-aseguraste-la-calidad-y-mantenibilidad-del-código)
 
 ---
 
@@ -940,6 +944,149 @@ gitGraph
 | Dark-only | Coherencia visual y enfoque emocional. El light-mode añadiría 50% de superficie sin agregar valor al producto core. |
 | Sass migrado a `@use` antes de Dart Sass 3.0 | Evitar deuda técnica futura cuando `@import` deje de funcionar. |
 | Feature flag `enable_pomodoro_system` como kill-switch | El nombre se lee como "activar pomodoro" pero el efecto es "ocultar pomodoro". Decisión explícita del producto: poder apagar la sección sin redeploy. |
+
+---
+
+## 12. Respondiendo preguntas
+
+Esta sección recopila respuestas a las tres preguntas habituales sobre
+el proyecto: los retos enfrentados, las técnicas de optimización
+aplicadas y cómo se aseguró la calidad del código. Está escrita para
+que sea legible tanto por alguien técnico que quiera profundizar en
+los detalles, como por alguien sin background de desarrollo que
+necesite entender qué se hizo y por qué.
+
+---
+
+### 12.1 ¿Cuáles fueron los principales desafíos al implementar las nuevas funcionalidades?
+
+**En lenguaje sencillo:** el desafío más constante del proyecto no fue
+construir las funcionalidades en sí, sino la cantidad de detalles
+visuales pequeños que aparecían mientras se probaba cada nueva pantalla
+— un padding mal puesto, un fondo blanco que rompía el modo oscuro, un
+botón que quedaba fuera de la vista al desplegar otra sección, un
+header que se solapaba con el contenido al hacer scroll. Cada uno por
+separado parece mínimo; sumados restaban tiempo a la implementación de
+nuevas funcionalidades.
+
+**El detalle técnico:** mientras se codificaba cada feature, las
+pruebas visuales en pantalla iban revelando ajustes finos de UI/UX.
+Cada uno requería desviar la atención del feature en curso, abrir una
+rama de fix, corregir, probar y retomar. Es un trade-off difícil de
+mitigar a nivel humano: cuando estás construyendo una app que muchas
+personas van a usar, **es difícil ignorar un detalle visual roto y
+seguir avanzando** — el cerebro insiste en arreglarlo antes de
+continuar.
+
+**Cómo se mitigó:** se priorizó. Los fixes que afectaban usabilidad
+real (un botón inalcanzable, un fondo blanco que rompía la identidad
+de marca) se atendieron de inmediato. Los cosméticos menores se
+agruparon en pasadas de polish dedicadas (releases v1.3, v1.5, v1.7,
+v1.8 son ejemplos de esto). Es importante remarcar que **esto no
+afectó la calidad del producto final** — todos los detalles reportados
+se resolvieron antes del release. El costo se sintió en velocidad de
+iteración durante el desarrollo, no en calidad de la entrega.
+
+Otros retos puntuales que se atendieron a lo largo del proyecto:
+
+| Reto | Cómo se resolvió |
+|---|---|
+| **Reglas de Firestore vs. UX**. Encontrar el balance entre reglas estrictas (que validen tipos, rangos e invariantes del wallet) y reglas funcionales (que no rechacen writes legítimos del cliente). | Empezar con reglas permisivas que validen ownership solamente, verificar que el flujo real funciona, y luego endurecer iterativamente con validaciones de campo cuando se identifica un vector específico de abuso. |
+| **Notificaciones del sistema multiplataforma**. El plugin de Capacitor se comporta distinto en web (cae a `setTimeout`, sólo dispara con la pestaña abierta) y en native (Android / iOS, dispara aunque la app esté cerrada). | Implementar la misma API en `NotificationService` para ambas plataformas y documentar la limitación de web claramente, tanto en el código como en el README, para que nadie se sorprenda. |
+| **Recurrencia con días específicos**. Calcular la siguiente ocurrencia de una tarea "Lunes a Viernes" cuando se completa un viernes (debe saltar al lunes siguiente, no al día siguiente). | Crear un helper `nextDateOnDays()` que itera del día siguiente buscando el próximo día permitido en la lista de recurrencia, en lugar de simplemente sumar 7 días. |
+| **Sincronización entre dispositivos**. Resolver writes optimistas locales + listener realtime de Firestore + reconciliación sin "saltos" visibles cuando llega el snapshot del servidor. | Actualizar la signal local de inmediato para que la UI responda al instante, y dejar que los operadores atómicos de Firestore (`increment`, `arrayUnion`) reconcilien con el servidor; cualquier duplicado se filtra por id de transacción. |
+| **Pasos manuales en Firebase Console**. Habilitar Authentication providers, crear la base Firestore, escribir las reglas, activar Remote Config — todos pasos fuera del repo que un nuevo dev necesita ejecutar. | Documentar paso a paso la [sección 6 del README](#6-cómo-ejecutar-la-aplicación) con instrucciones claras de qué buscar en la consola, y dejar las reglas y los feature flags listos para copiar/pegar. |
+
+---
+
+### 12.2 ¿Qué técnicas de optimización de rendimiento aplicaste y por qué?
+
+**En lenguaje sencillo:** la app se optimizó en tres frentes para que
+sea rápida en cualquier dispositivo y red:
+
+1. **Que abra rápido** la primera vez (carga inicial).
+2. **Que siga rápida** aunque el usuario acumule cientos o miles de
+   tareas (rendimiento en listas grandes).
+3. **Que no consuma más memoria con el tiempo** (uso eficiente de
+   memoria).
+
+Cada decisión se tomó en función del impacto real en la experiencia
+del usuario, no por estética técnica.
+
+**El detalle técnico:** la app arranca rápido porque carga sólo lo
+esencial primero y descarga el resto en segundo plano una vez la
+pantalla ya está pintada. Maneja listas grandes porque Angular sólo
+re-renderiza los elementos que realmente cambian, y porque las tareas
+completadas viven en un cajón que ni siquiera se monta en el DOM hasta
+que el usuario lo abre. Mantiene memoria estable porque cada listener
+de Firebase se cancela cuando el usuario cambia, sin dejar
+suscripciones huérfanas.
+
+#### Carga inicial
+
+| Técnica | Por qué |
+|---|---|
+| **IdlePreloadStrategy custom** ([src/app/core/routing/idle-preload.strategy.ts](src/app/core/routing/idle-preload.strategy.ts)) | El default `PreloadAllModules` empezaba a descargar TODAS las páginas (Stats, Categorías, Recompensas…) en el momento del bootstrap, compitiendo con la primera pintura por el ancho de banda. La estrategia custom espera 2.5 segundos después del bootstrap, deja que la pintura inicial gane prioridad y luego precarga el resto silenciosamente. |
+| **Opt-out de preload en páginas frías** (`data: { preload: false }` en Stats y Categories) | El usuario típico no las visita en su primera sesión. Si nunca las abre, jamás se descargan — ahorro de bandwidth puro. |
+| **Modular Firebase SDK** | `import { getAuth } from 'firebase/auth'` permite tree-shaking real: sólo el código que importamos termina en el bundle. Un `import * as firebase` hubiera traído aproximadamente 3× más KB innecesarios. |
+| **Lazy import de Remote Config** | `await import('firebase/remote-config')` dentro del método `hydrate()` significa que el SDK de Remote Config sólo se descarga si la app llega a ese punto del flujo. Usuarios que cierran antes de pasar onboarding jamás lo bajan. |
+| **Pre-paint inline en `index.html`** | Un `<style>` en el `<head>` pinta el fondo oscuro de la marca de inmediato. Evita el destello blanco de 1-2 frames entre que el DOM termina de cargar e Ionic monta la aplicación. |
+| **Budgets calibrados en `angular.json`** | El budget previo de 800 KB era irreal para una app Ionic + Firebase moderna. Calibrado a 1.2 MB warning / 2.5 MB error, las alertas ahora reflejan regresiones reales y no falsos positivos. |
+| **Bundle analyzer** (`npm run analyze`) | Permite a cualquier desarrollador inspeccionar exactamente qué archivos contribuyen a cada KB del bundle antes de mergear código nuevo. Es la herramienta clave para detectar imports accidentales de librerías grandes. |
+
+#### Manejo eficiente de muchas tareas
+
+| Técnica | Por qué |
+|---|---|
+| **`ChangeDetectionStrategy.OnPush` en todos los componentes** | Sin OnPush, Angular re-evalúa TODA la plantilla en cada ciclo de detección de cambios. Con OnPush, sólo cuando una signal o un input cambia. Para una lista de 1 000 tareas con scroll continuo, la diferencia es del orden de 10× menos comprobaciones por frame. |
+| **`@for ... track t.id` en todos los bucles** | Sin `track`, Angular re-crea TODOS los nodos del DOM en cada cambio del array. Con track por id, sólo actualiza los nodos que realmente cambiaron — esencial para listas largas que se filtran o reordenan. |
+| **Computed signals memoizadas** | Las `computed()` de Angular sólo se re-ejecutan cuando alguna de sus dependencias cambia. La plantilla puede leer `pendingTasks()` mil veces en un render sin penalización. |
+| **Cajón de completadas con `@if`** | Las tareas completadas no se renderizan **hasta que el usuario abre el cajón**. Equivalente a una "virtualización binaria": si hay 5 000 completadas, cero nodos DOM hasta que se solicitan. |
+| **Operadores atómicos de Firestore** (`increment()` + `arrayUnion()`) | Dos dispositivos del mismo usuario marcando tareas casi simultáneamente NO se pisan el balance — Firestore aplica los increments de forma atómica del lado del servidor. |
+| **History del wallet limitada a 40 entradas** | El historial nunca crece indefinidamente. El documento se mantiene muy por debajo del límite de 1 MB de Firestore y la UI no necesita scroll infinito. |
+
+#### Minimización del uso de memoria
+
+| Técnica | Por qué |
+|---|---|
+| **Cleanup explícito de listeners de Firestore** | Cada servicio guarda la función `unsubscribe()` y la invoca cuando el usuario cambia. Sin esto, los listeners del usuario anterior seguirían disparándose después de un logout/login — fuga de memoria silenciosa y bugs lógicos. |
+| **Signals en lugar de RxJS Subjects** | Las signals no necesitan `.subscribe()` ni `.unsubscribe()` — el contexto de inyección las limpia automáticamente cuando el componente se destruye. Elimina la fuente más común de fugas de memoria en aplicaciones Angular. |
+| **`@if` en lugar de `[hidden]`** | `@if` elimina el nodo del DOM cuando es falso; `[hidden]` lo mantiene en memoria con `display: none`. Aplicado en el cajón de completadas, modales y secciones condicionales. |
+| **Ionic mode forzado a `'ios'`** | Sin esto, Ionic carga AMBOS themes (Material Design + iOS) en runtime. Ahorra aproximadamente 80 KB de CSS + JS y evita inconsistencias visuales entre plataformas. |
+| **`rippleEffect: false`** | Apaga el componente `ion-ripple-effect`. Resultado: un nodo DOM menos por cada botón Ionic en la pantalla. |
+| **StatsService sin cache local** | Llama `fetchAll(uid)` cada vez que la página entra (`ionViewWillEnter`) y libera la referencia al salir. La lista de sesiones de focus puede crecer mucho con el tiempo; no se mantiene en memoria entre visitas. |
+
+---
+
+### 12.3 ¿Cómo aseguraste la calidad y mantenibilidad del código?
+
+**En lenguaje sencillo:** la calidad no se "agrega al final" — se
+asegura desde la primera línea adoptando convenciones que vuelven el
+desarrollo predecible. **El criterio rector fue: cualquier
+desarrollador nuevo debe poder entender el código y empezar a aportar
+en menos de una hora.**
+
+Para lograrlo, se usaron tipos estrictos de TypeScript para que los
+errores aparezcan al escribir el código y no en producción, se
+separaron las responsabilidades en capas (vista, lógica, persistencia)
+para que cada cambio toque sólo lo que debe tocar, se documentaron las
+decisiones importantes en `README.md` y `PERFORMANCE.md`, y se siguió
+git flow estricto con Pull Requests e issues para que la historia del
+proyecto cuente lo que pasó y por qué.
+
+**El detalle técnico:**
+
+| Pilar | Cómo se aplicó concretamente |
+|---|---|
+| **TypeScript estricto** | `tsconfig.json` con `strict: true`, `strictTemplates`, `strictInjectionParameters`, `noPropertyAccessFromIndexSignature` y `noImplicitReturns`. Cero `any` implícitos en toda la app. Los errores se capturan al compilar, no en runtime. |
+| **Arquitectura por capas** | UI → Domain services (signal-based) → Persistence services (Firestore I/O) → Firebase. Cambiar el backend mañana implica reescribir sólo la capa de persistencia; la UI y el dominio quedan intactos. Esto se logra porque **ningún componente importa Firestore directamente**. |
+| **Componentes presentacionales sin estado** | 8 componentes compartidos en `shared/components/`. Cada uno standalone, OnPush, sin estado interno — sólo `@Input()` y `@Output()`. Cambiar la apariencia de las tarjetas de tarea en TODA la app significa modificar **un solo archivo** (`task-card.component.ts`). |
+| **Convenciones de Git** | Git flow estricto: `feature/*` → `develop` → `main` (releases). Conventional Commits (`feat`, `fix`, `chore`, `docs`, `refactor`). **Cada feature/fix tiene un PR con descripción detallada y un issue retroactivo cerrado con referencia bidireccional**, manteniendo trazabilidad completa de qué entró, cuándo y por qué. |
+| **Defensa en profundidad** | Tres capas de validación: el cliente valida la forma de los datos, la UI deshabilita opciones inválidas, y las **Firestore Security Rules enforzan los invariantes del lado del servidor** (ownership, tipos, rangos, monotonicidad del wallet). Un cliente comprometido no puede inflar el balance ni leer datos de otro usuario. |
+| **Documentación viva** | [README.md](README.md) cubre producto, arquitectura y operaciones. [PERFORMANCE.md](PERFORMANCE.md) cubre todas las optimizaciones aplicadas. JSDoc en métodos no obvios (`computeReward`, `cycleRecurrence`, `scheduleSpec`, `ensureSeeded`) explica el "por qué", no el "qué" — porque el "qué" lo cuenta el código. |
+| **Cero referencias a IA en el repo** | Propiedad intelectual limpia — el historial de Git, commits, PRs e issues son 100 % atribuidos a `karentarchb`. Ningún rastro de herramientas externas en código, ni en metadata. |
+| **Path aliases** | `@core/*`, `@shared/*`, `@pages/*`, `@env/*` definidos en `tsconfig.json`. Imports cortos, refactor-resistentes, y sin rutas relativas profundas (`../../../`) que ofusquen el origen de un símbolo. |
+| **Feature flags como práctica** | El sistema `enable_pomodoro_system` (ver [§5](#5-feature-flags)) demuestra cómo aislar partes del producto: una decisión de negocio se traduce en un cambio remoto sin redeploy ni código comprometido. Patrón replicable para futuras secciones del producto. |
 
 ---
 
