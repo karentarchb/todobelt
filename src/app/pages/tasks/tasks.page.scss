@@ -107,14 +107,55 @@
   gap: 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
+  scroll-snap-type: x mandatory;
   padding: 4px 4px 4px 0;
   margin: 0 -20px;
   padding-left: 20px;
-  padding-right: 20px;
+  padding-right: 32px;
   scrollbar-width: none;
 
+  // Soft right-edge fade signals there is more content to scroll to.
+  mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black calc(100% - 28px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black calc(100% - 28px),
+    transparent 100%
+  );
+
   &::-webkit-scrollbar { display: none; }
+
+  .tk-template {
+    scroll-snap-align: start;
+  }
+}
+
+/* Inline scroll hint shown right under the field label */
+.tk-field__scroll-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--tb-text-faint);
+  text-transform: none;
+  letter-spacing: 0.01em;
+
+  ion-icon {
+    font-size: 13px;
+    animation: tb-scroll-hint 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes tb-scroll-hint {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(4px); }
 }
 
 .tk-template {
@@ -194,8 +235,21 @@
   padding: 4px 4px 4px 0;
   margin: 0 -20px;
   padding-left: 20px;
-  padding-right: 20px;
+  padding-right: 32px;
   scrollbar-width: none;
+
+  mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black calc(100% - 28px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black calc(100% - 28px),
+    transparent 100%
+  );
 
   &::-webkit-scrollbar { display: none; }
 }
