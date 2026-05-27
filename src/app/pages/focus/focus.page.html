@@ -1,0 +1,88 @@
+<ion-header class="tb-clean">
+  <ion-toolbar>
+    <div class="fc-top">
+      <h1 class="fc-top__title">Enfoque</h1>
+      <span class="tb-eyebrow">Modo flow</span>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <p class="fc-lead">
+    Elige cuánto tiempo quieres concentrarte. Recibirás monedas al terminar.
+  </p>
+
+  <!-- Ring + timer -->
+  <section class="fc-ring tb-anim-pop">
+    <svg viewBox="0 0 120 120" class="fc-ring__svg">
+      <circle
+        cx="60" cy="60" r="50"
+        fill="none"
+        stroke="rgba(255,255,255,0.06)"
+        stroke-width="4"
+      />
+      <circle
+        cx="60" cy="60" r="50"
+        fill="none"
+        stroke="url(#fcGrad)"
+        stroke-width="4"
+        stroke-linecap="round"
+        stroke-dasharray="314"
+        [attr.stroke-dashoffset]="dashOffset()"
+        transform="rotate(-90 60 60)"
+      />
+      <defs>
+        <linearGradient id="fcGrad" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0" stop-color="#ff4fa3" />
+          <stop offset="1" stop-color="#b06cff" />
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <div class="fc-ring__time">
+      <div class="fc-ring__clock">
+        {{ pad(minutes()) }}<span>:</span>{{ pad(seconds()) }}
+      </div>
+      <div class="fc-ring__hint">
+        {{ session().state === 'running' ? 'Enfocada · sigue así' :
+           session().state === 'paused'  ? 'En pausa' :
+           session().state === 'done'    ? '¡Sesión completada!' :
+                                            currentMinutes() + ' min de enfoque' }}
+      </div>
+    </div>
+  </section>
+
+  <!-- Presets -->
+  <div class="fc-presets">
+    @for (p of presets; track p.minutes) {
+      <button
+        type="button"
+        class="fc-preset"
+        [class.fc-preset--active]="currentMinutes() === p.minutes"
+        [disabled]="session().state === 'running'"
+        (click)="setPreset(p.minutes)"
+      >
+        <span class="fc-preset__label">{{ p.label }}</span>
+        <span class="fc-preset__minutes">{{ p.minutes }} min</span>
+      </button>
+    }
+  </div>
+
+  <!-- Actions -->
+  <div class="fc-actions">
+    @if (session().state === 'running') {
+      <tb-primary-button [block]="true" variant="ghost" (pressed)="pause()">
+        Pausar
+      </tb-primary-button>
+    } @else if (session().state === 'paused') {
+      <tb-primary-button [block]="true" (pressed)="start()">Reanudar</tb-primary-button>
+      <tb-primary-button variant="ghost" (pressed)="reset()">Reiniciar</tb-primary-button>
+    } @else {
+      <tb-primary-button [block]="true" (pressed)="start()">
+        Comenzar sesión
+      </tb-primary-button>
+    }
+  </div>
+
+  <div class="fc-tail"></div>
+</ion-content>

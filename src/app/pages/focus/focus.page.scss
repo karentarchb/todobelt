@@ -1,0 +1,127 @@
+.fc-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 20px 4px;
+}
+
+.fc-top__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--tb-text-strong);
+}
+
+.fc-lead {
+  margin: 12px 0 24px;
+  font-size: 14.5px;
+  color: var(--tb-text-muted);
+  line-height: 1.5;
+  max-width: 420px;
+}
+
+/* -------- Ring -------- */
+.fc-ring {
+  position: relative;
+  width: min(320px, 80vw);
+  aspect-ratio: 1;
+  margin: 8px auto 28px;
+}
+
+.fc-ring__svg {
+  width: 100%;
+  height: 100%;
+  transition: filter var(--tb-dur) var(--tb-ease);
+  filter: drop-shadow(0 0 20px rgba(255, 79, 163, 0.18));
+}
+
+.fc-ring__time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.fc-ring__clock {
+  font-size: 56px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--tb-text-strong);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+
+  span {
+    color: var(--tb-text-faint);
+    margin: 0 -2px;
+  }
+}
+
+.fc-ring__hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--tb-text-muted);
+  letter-spacing: -0.005em;
+}
+
+/* -------- Presets -------- */
+.fc-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin: 0 0 24px;
+}
+
+.fc-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 6px;
+  background: var(--tb-bg-2);
+  border: 1px solid var(--tb-border);
+  border-radius: var(--tb-r-md);
+  color: var(--tb-text-muted);
+  cursor: pointer;
+  transition:
+    background var(--tb-dur-fast) var(--tb-ease),
+    border-color var(--tb-dur-fast) var(--tb-ease),
+    color var(--tb-dur-fast) var(--tb-ease);
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.fc-preset__label {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.fc-preset__minutes {
+  font-size: 11px;
+  color: var(--tb-text-faint);
+}
+
+.fc-preset--active {
+  background: rgba(255, 79, 163, 0.10);
+  border-color: rgba(255, 79, 163, 0.30);
+  color: var(--tb-text-strong);
+
+  .fc-preset__minutes { color: var(--tb-rose); }
+}
+
+/* -------- Actions -------- */
+.fc-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fc-tail { height: 40px; }

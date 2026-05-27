@@ -1,0 +1,119 @@
+.hm-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 20px 4px;
+}
+
+.hm-top__hi {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--tb-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.hm-top__name {
+  margin: 2px 0 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--tb-text-strong);
+}
+
+.hm-block {
+  margin: 16px 0 4px;
+}
+
+.hm-block__hint {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--tb-text-muted);
+}
+
+/* -------- Progress card -------- */
+.hm-progress {
+  margin: 22px 0 4px;
+  padding: 20px;
+  border-radius: var(--tb-r-lg);
+  background:
+    radial-gradient(120% 100% at 100% 0%, rgba(255, 79, 163, 0.10) 0%, transparent 60%),
+    var(--tb-bg-2);
+  border: 1px solid var(--tb-border);
+}
+
+.hm-progress__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hm-progress__count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tb-text);
+}
+
+.hm-progress__title {
+  margin: 8px 0 14px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--tb-text-strong);
+  line-height: 1.2;
+}
+
+.hm-progress__bar {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  border-radius: var(--tb-r-pill);
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.hm-progress__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--tb-rose), var(--tb-rose-soft));
+  box-shadow: 0 0 12px rgba(255, 79, 163, 0.45);
+  transition: width var(--tb-dur-slow) var(--tb-ease);
+}
+
+.hm-progress__sub {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--tb-text-muted);
+}
+
+/* -------- Lists -------- */
+.hm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hm-link {
+  background: transparent;
+  border: none;
+  color: var(--tb-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px;
+
+  ion-icon { font-size: 14px; }
+
+  &:hover {
+    color: var(--tb-rose);
+  }
+}
+
+.hm-tail {
+  height: 40px;
+}

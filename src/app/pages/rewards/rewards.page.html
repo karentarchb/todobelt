@@ -1,0 +1,67 @@
+<ion-header class="tb-clean">
+  <ion-toolbar>
+    <div class="rw-top">
+      <h1 class="rw-top__title">Recompensas</h1>
+      <tb-coin-badge [value]="balance()" size="lg"></tb-coin-badge>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Wallet summary -->
+  <section class="rw-wallet tb-anim-rise">
+    <p class="tb-eyebrow">Tu monedero</p>
+    <div class="rw-wallet__big">{{ balance() }}</div>
+    <div class="rw-wallet__row">
+      <div class="rw-wallet__stat">
+        <span class="rw-wallet__stat-label">Ganadas</span>
+        <span class="rw-wallet__stat-value">{{ totalEarned() }}</span>
+      </div>
+      <span class="rw-wallet__sep" aria-hidden="true"></span>
+      <div class="rw-wallet__stat">
+        <span class="rw-wallet__stat-label">Canjeadas</span>
+        <span class="rw-wallet__stat-value">{{ totalSpent() }}</span>
+      </div>
+    </div>
+  </section>
+
+  <tb-section-header
+    title="Disponibles para ti"
+    subtitle="Date un pequeño respiro: te lo mereces."
+  ></tb-section-header>
+
+  @if (affordable().length) {
+    <div class="rw-list tb-stagger">
+      @for (r of affordable(); track r.id) {
+        <tb-reward-card
+          [reward]="r"
+          [affordable]="true"
+          (claim)="claim($event)"
+        ></tb-reward-card>
+      }
+    </div>
+  } @else {
+    <p class="rw-empty">
+      Aún no tienes suficientes monedas. Completa una tarea para empezar.
+    </p>
+  }
+
+  @if (locked().length) {
+    <tb-section-header
+      title="Próximas recompensas"
+      subtitle="Sigue así, te faltan muy pocas monedas."
+    ></tb-section-header>
+
+    <div class="rw-list tb-stagger">
+      @for (r of locked(); track r.id) {
+        <tb-reward-card
+          [reward]="r"
+          [affordable]="false"
+          (claim)="claim($event)"
+        ></tb-reward-card>
+      }
+    </div>
+  }
+
+  <div class="rw-tail"></div>
+</ion-content>

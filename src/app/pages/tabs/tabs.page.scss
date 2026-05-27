@@ -1,0 +1,18 @@
+:host {
+  --ion-tab-bar-background: rgba(17, 17, 17, 0.85);
+}
+
+ion-tab-button {
+  --color: var(--tb-text-muted);
+  --color-selected: var(--tb-rose);
+
+  ion-icon {
+    font-size: 22px;
+  }
+
+  ion-label {
+    font-size: 10.5px;
+    letter-spacing: 0.01em;
+    margin-top: 2px;
+  }
+}
