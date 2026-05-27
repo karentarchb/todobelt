@@ -3,7 +3,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'app.todobelt',
   appName: 'TODO BELT',
-  webDir: 'www',
+  // Angular 17+ application builder outputs to www/browser by default.
+  webDir: 'www/browser',
   backgroundColor: '#0A0A0C',
   android: {
     backgroundColor: '#0A0A0C',
