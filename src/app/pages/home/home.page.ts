@@ -67,8 +67,17 @@ export class HomePage {
     await flashToggle(this.toastCtrl, result);
   }
 
-  onClaim(id: string): void {
-    this.rewardsSvc.claim(id);
+  async onClaim(id: string): Promise<void> {
+    const result = await this.rewardsSvc.claim(id);
+    if (!result.ok && result.message) {
+      const toast = await this.toastCtrl.create({
+        message: result.message,
+        duration: 1800,
+        position: 'top',
+        cssClass: 'tb-toast',
+      });
+      await toast.present();
+    }
   }
 
   goTasks(): void {

@@ -33,7 +33,7 @@ export class RewardsPage {
   );
 
   async claim(id: string): Promise<void> {
-    const result = this.rewardsSvc.claim(id);
+    const result = await this.rewardsSvc.claim(id);
     const toast = await this.toastCtrl.create({
       message: result.message,
       duration: 2000,
