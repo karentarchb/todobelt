@@ -167,7 +167,12 @@
 
 /* ============ Editor sheet ============ */
 .cg-sheet {
-  padding: 24px 20px 36px;
+  // Scrollable so the icon grid never pushes the save button below the
+  // visible area on shorter phones.
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px 20px 0;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -304,10 +309,15 @@
   letter-spacing: -0.005em;
 }
 
-/* ---- Actions ---- */
+/* ---- Actions (sticky footer) ---- */
 .cg-sheet__actions {
-  margin-top: 4px;
-  padding-bottom: env(safe-area-inset-bottom);
+  position: sticky;
+  bottom: 0;
+  margin: 4px -20px 0;
+  padding: 14px 20px calc(20px + env(safe-area-inset-bottom));
+  background: var(--tb-bg-2);
+  border-top: 1px solid var(--tb-border);
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: flex-end;
