@@ -70,7 +70,11 @@
   @if (pending().length) {
     <div class="hm-list tb-stagger">
       @for (t of pending(); track t.id) {
-        <tb-task-card [task]="t" (toggle)="toggleTask($event)"></tb-task-card>
+        <tb-task-card
+          [task]="t"
+          (toggle)="toggleTask($event)"
+          (action)="openActions($event)"
+        ></tb-task-card>
       }
     </div>
   } @else {

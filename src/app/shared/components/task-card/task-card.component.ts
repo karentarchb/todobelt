@@ -15,7 +15,7 @@ import { relativeDay } from '@core/helpers/date.helper';
     <article
       class="tb-task"
       [class.tb-task--done]="task.done"
-      (click)="toggle.emit(task.id)"
+      (click)="action.emit(task.id)"
     >
       <button
         type="button"
@@ -60,7 +60,12 @@ export class TaskCardComponent {
 
   @Input({ required: true }) task!: Task;
 
+  /** Emitted when the user explicitly taps the check circle. */
   @Output() toggle = new EventEmitter<string>();
+
+  /** Emitted when the user taps anywhere else on the card — used by the
+   *  parent page to open the action sheet (complete / edit / delete). */
+  @Output() action = new EventEmitter<string>();
 
   /**
    * Resolved category meta for this task. Falls back gracefully when
