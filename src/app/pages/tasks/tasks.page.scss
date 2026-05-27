@@ -477,7 +477,13 @@
 
 /* ============ Add sheet ============ */
 .tk-sheet {
-  padding: 24px 20px 36px;
+  // The sheet fills the modal's content area; long forms (weekly recurrence
+  // with the day picker) need to scroll, and the submit button must stay
+  // reachable via the sticky footer below.
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px 20px 0;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -591,6 +597,15 @@
 }
 
 .tk-sheet__actions {
-  margin-top: 4px;
-  padding-bottom: env(safe-area-inset-bottom);
+  // Sticky footer so the primary action stays in reach no matter how
+  // tall the form grows. The negative horizontal margin lets the bar
+  // span the sheet's padding, and the top border + dark background
+  // visually separate it from the scrolling content underneath.
+  position: sticky;
+  bottom: 0;
+  margin: 4px -20px 0;
+  padding: 14px 20px calc(20px + env(safe-area-inset-bottom));
+  background: var(--tb-bg-2);
+  border-top: 1px solid var(--tb-border);
+  z-index: 2;
 }
