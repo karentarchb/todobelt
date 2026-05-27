@@ -135,6 +135,12 @@
 
 .lg-brand__name {
   margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  // Neutralise the global ss01/ss03/cv11 stylistic alternates and any
+  // ligatures so the wordmark always renders with the canonical Inter
+  // glyphs (the cause of the visually-smaller 'B' on Android).
+  font-feature-settings: normal;
+  font-variant-ligatures: none;
   font-size: 38px;
   font-weight: 800;
   letter-spacing: -0.02em;
