@@ -17,6 +17,19 @@
 
     <link rel="manifest" href="manifest.webmanifest" />
 
+    <!-- Brand typography: Inter is the brand font but is not present on
+         Android by default (system falls back to Roboto, which renders
+         certain glyphs like the uppercase B noticeably lighter at weight
+         800). Loading from Google Fonts with preconnect keeps the cold
+         start fast on web while ensuring the same wordmark on every
+         platform once the font is cached. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    />
+
     <!-- Pre-paint to avoid white flash before Ionic mounts -->
     <style>
       html,

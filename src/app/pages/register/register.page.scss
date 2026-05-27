@@ -76,6 +76,11 @@
 
 .rg-brand__name {
   margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  // Neutralise the global ss alternates / ligatures so the wordmark
+  // matches the login screen on every platform.
+  font-feature-settings: normal;
+  font-variant-ligatures: none;
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.02em;
