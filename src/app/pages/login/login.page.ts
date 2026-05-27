@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IonicModule, ToastController } from '@ionic/angular';
 
-import { PrimaryButtonComponent } from '@shared/components/primary-button/primary-button.component';
 import { AuthService } from '@core/services/auth.service';
 
 type SocialProvider = 'google' | 'apple';
@@ -11,7 +10,7 @@ type SocialProvider = 'google' | 'apple';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [IonicModule, FormsModule, PrimaryButtonComponent],
+  imports: [IonicModule, FormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./login.page.scss'],
   templateUrl: './login.page.html',

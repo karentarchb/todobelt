@@ -1,6 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { IonicModule } from '@ionic/angular';
-import { RouterOutlet } from '@angular/router';
 import { addIcons } from 'ionicons';
 import {
   addOutline,
@@ -50,7 +49,7 @@ import { MoodService } from '@core/services/mood.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [IonicModule, RouterOutlet],
+  imports: [IonicModule],
   template: `
     <ion-app>
       <ion-router-outlet></ion-router-outlet>
