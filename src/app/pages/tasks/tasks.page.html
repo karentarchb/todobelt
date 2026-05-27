@@ -2,9 +2,14 @@
   <ion-toolbar>
     <div class="tk-top">
       <h1 class="tk-top__title">Tareas</h1>
-      <button class="tk-add" (click)="openAdd()" aria-label="Crear tarea">
-        <ion-icon name="add" aria-hidden="true"></ion-icon>
-      </button>
+      <div class="tk-top__actions">
+        <button class="tk-iconbtn" (click)="goCategories()" aria-label="Gestionar categorías">
+          <ion-icon name="pricetags-outline" aria-hidden="true"></ion-icon>
+        </button>
+        <button class="tk-iconbtn tk-iconbtn--accent" (click)="openAdd()" aria-label="Crear tarea">
+          <ion-icon name="add" aria-hidden="true"></ion-icon>
+        </button>
+      </div>
     </div>
   </ion-toolbar>
 </ion-header>
@@ -53,13 +58,41 @@
     </div>
   </section>
 
-  <!-- Segmented filters -->
+  <!-- Category filter chips -->
+  @if (categories().length) {
+    <section class="tk-catfilter" aria-label="Filtrar por categoría">
+      <div class="tk-catfilter__row">
+        <button
+          type="button"
+          class="tk-catchip"
+          [class.tk-catchip--active]="categoryFilter() === null"
+          (click)="clearCategoryFilter()"
+        >
+          Todas
+        </button>
+        @for (c of categories(); track c.id) {
+          <button
+            type="button"
+            class="tk-catchip"
+            [class.tk-catchip--active]="categoryFilter() === c.id"
+            [style.--chip-accent]="accentForCategory(c.id)"
+            (click)="toggleCategoryFilter(c.id)"
+          >
+            <ion-icon [name]="c.icon" aria-hidden="true"></ion-icon>
+            {{ c.name }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Status segments -->
   <nav class="tk-segs" role="tablist">
     <button
       type="button"
       class="tk-seg"
-      [class.tk-seg--active]="filter() === 'all'"
-      (click)="setFilter('all')"
+      [class.tk-seg--active]="statusFilter() === 'all'"
+      (click)="setStatus('all')"
       role="tab"
     >
       Todas <span class="tk-seg__count">{{ counts().all }}</span>
@@ -67,8 +100,8 @@
     <button
       type="button"
       class="tk-seg"
-      [class.tk-seg--active]="filter() === 'today'"
-      (click)="setFilter('today')"
+      [class.tk-seg--active]="statusFilter() === 'today'"
+      (click)="setStatus('today')"
       role="tab"
     >
       Pendientes <span class="tk-seg__count">{{ counts().today }}</span>
@@ -76,8 +109,8 @@
     <button
       type="button"
       class="tk-seg"
-      [class.tk-seg--active]="filter() === 'done'"
-      (click)="setFilter('done')"
+      [class.tk-seg--active]="statusFilter() === 'done'"
+      (click)="setStatus('done')"
       role="tab"
     >
       Hechas <span class="tk-seg__count">{{ counts().done }}</span>
@@ -134,18 +167,27 @@
       <div class="tk-field">
         <span class="tk-field__label">Categoría</span>
         <div class="tk-chips">
-          @for (c of categories; track c.key) {
+          @for (c of categories(); track c.id) {
             <button
               type="button"
               class="tk-chip"
-              [class.tk-chip--active]="draftCategory() === c.key"
-              (click)="draftCategory.set(c.key)"
-              [style.--chip-accent]="c.accent"
+              [class.tk-chip--active]="draftCategory() === c.id"
+              (click)="draftCategory.set(c.id)"
+              [style.--chip-accent]="accentForCategory(c.id)"
             >
               <ion-icon [name]="c.icon" aria-hidden="true"></ion-icon>
-              <span>{{ c.label }}</span>
+              <span>{{ c.name }}</span>
             </button>
           }
+          <button
+            type="button"
+            class="tk-chip tk-chip--manage"
+            (click)="goCategories()"
+            aria-label="Gestionar categorías"
+          >
+            <ion-icon name="settings-outline" aria-hidden="true"></ion-icon>
+            <span>Gestionar</span>
+          </button>
         </div>
       </div>
 

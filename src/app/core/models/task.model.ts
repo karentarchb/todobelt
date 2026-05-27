@@ -1,18 +1,17 @@
 export type TaskPriority = 'low' | 'medium' | 'high';
 
-export type TaskCategory =
-  | 'work'
-  | 'personal'
-  | 'health'
-  | 'study'
-  | 'home'
-  | 'creative';
+/**
+ * Tasks reference a category by its Firestore id. The id may be a stable
+ * slug for seeded defaults ('work', 'personal', 'health', 'study', 'home',
+ * 'creative') or an auto-generated id for user-created custom categories.
+ */
+export type TaskCategoryId = string;
 
 export interface Task {
   id: string;
   title: string;
   notes?: string;
-  category: TaskCategory;
+  category: TaskCategoryId;
   priority: TaskPriority;
   /** Coins earned when completed */
   reward: number;
@@ -28,7 +27,7 @@ export interface Task {
 export interface NewTaskInput {
   title: string;
   notes?: string;
-  category?: TaskCategory;
+  category?: TaskCategoryId;
   priority?: TaskPriority;
   dueAt?: string;
   reward?: number;
@@ -41,7 +40,7 @@ export interface NewTaskInput {
 export interface TaskTemplate {
   id: string;
   title: string;
-  category: TaskCategory;
+  category: TaskCategoryId;
   priority: TaskPriority;
   /** Time of day (HH:mm) used to compute today's dueAt at insertion. */
   defaultTime?: string;
