@@ -1,11 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonicModule, ToastController } from '@ionic/angular';
+import {
+  ActionSheetController,
+  AlertController,
+  IonicModule,
+  ToastController,
+} from '@ionic/angular';
 
 import { TasksService } from '@core/services/tasks.service';
 import { CategoriesService } from '@core/services/categories.service';
-import { TaskCategoryId, TaskPriority, TaskTemplate } from '@core/models';
+import { Task, TaskCategoryId, TaskPriority, TaskTemplate } from '@core/models';
 import { ACCENT_VAR } from '@core/constants/category-defaults.constants';
 import { flashToggle } from '@core/helpers/toggle-feedback.helper';
 
@@ -33,12 +38,15 @@ export class TasksPage {
   private readonly tasksSvc = inject(TasksService);
   private readonly categoriesSvc = inject(CategoriesService);
   private readonly toastCtrl = inject(ToastController);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly alertCtrl = inject(AlertController);
   private readonly router = inject(Router);
 
   readonly statusFilter = signal<StatusFilter>('all');
   readonly categoryFilter = signal<TaskCategoryId | null>(null);
 
   readonly showAdd = signal(false);
+  readonly editingId = signal<string | null>(null);
 
   readonly draftTitle = signal('');
   readonly draftCategory = signal<TaskCategoryId>('personal');
@@ -83,10 +91,90 @@ export class TasksPage {
     done: this.tasksSvc.completed().length,
   }));
 
+  // ----------- Card interactions -----------
+
+  /** Direct toggle when the user taps the check circle. */
   async toggleTask(id: string): Promise<void> {
     const result = await this.tasksSvc.toggle(id);
     await flashToggle(this.toastCtrl, result);
   }
+
+  /**
+   * Card-body tap: open an action sheet so the user explicitly picks
+   * what they want (complete / edit / delete) instead of an accidental
+   * toggle on every touch.
+   */
+  async openActions(taskId: string): Promise<void> {
+    const task = this.tasksSvc.tasks().find((t) => t.id === taskId);
+    if (!task) return;
+
+    const sheet = await this.actionSheetCtrl.create({
+      header: task.title,
+      cssClass: 'tb-action-sheet',
+      buttons: [
+        {
+          text: task.done ? 'Marcar como pendiente' : 'Marcar como completada',
+          icon: task.done ? 'arrow-undo-outline' : 'checkmark-outline',
+          handler: () => {
+            void this.toggleTask(task.id);
+          },
+        },
+        {
+          text: 'Editar',
+          icon: 'create-outline',
+          handler: () => {
+            this.openEdit(task);
+          },
+        },
+        {
+          text: 'Eliminar',
+          icon: 'trash-outline',
+          role: 'destructive',
+          handler: () => {
+            void this.confirmDelete(task);
+          },
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel',
+        },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async confirmDelete(task: Task): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: '¿Eliminar tarea?',
+      message: `"${task.title}" se eliminará. Esta acción no se puede deshacer.`,
+      cssClass: 'tb-alert',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            void this.doDelete(task.id);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async doDelete(id: string): Promise<void> {
+    await this.tasksSvc.remove(id);
+    const toast = await this.toastCtrl.create({
+      message: 'Tarea eliminada.',
+      duration: 1600,
+      position: 'top',
+      cssClass: 'tb-toast',
+    });
+    await toast.present();
+  }
+
+  // ----------- Templates -----------
 
   async useTemplate(template: TaskTemplate): Promise<void> {
     await this.tasksSvc.addFromTemplate(template);
@@ -112,7 +200,10 @@ export class TasksPage {
     return cat ? ACCENT_VAR[cat.accent] : 'var(--tb-text-muted)';
   }
 
+  // ----------- Add / edit modal -----------
+
   openAdd(): void {
+    this.editingId.set(null);
     this.draftTitle.set('');
     const first = this.categories()[0];
     this.draftCategory.set(first?.id ?? 'personal');
@@ -120,18 +211,37 @@ export class TasksPage {
     this.showAdd.set(true);
   }
 
+  openEdit(task: Task): void {
+    this.editingId.set(task.id);
+    this.draftTitle.set(task.title);
+    this.draftCategory.set(task.category);
+    this.draftPriority.set(task.priority);
+    this.showAdd.set(true);
+  }
+
   closeAdd(): void {
     this.showAdd.set(false);
+    this.editingId.set(null);
   }
 
   async submit(): Promise<void> {
     const title = this.draftTitle().trim();
     if (!title) return;
-    await this.tasksSvc.add({
-      title,
-      category: this.draftCategory(),
-      priority: this.draftPriority(),
-    });
+
+    const id = this.editingId();
+    if (id) {
+      await this.tasksSvc.update(id, {
+        title,
+        category: this.draftCategory(),
+        priority: this.draftPriority(),
+      });
+    } else {
+      await this.tasksSvc.add({
+        title,
+        category: this.draftCategory(),
+        priority: this.draftPriority(),
+      });
+    }
     this.closeAdd();
   }
 

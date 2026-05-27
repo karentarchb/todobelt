@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { ActionSheetController, AlertController, IonicModule, ToastController } from '@ionic/angular';
 
 import { TasksService } from '@core/services/tasks.service';
 import { WalletService } from '@core/services/wallet.service';
@@ -41,6 +41,8 @@ export class HomePage {
   private readonly rewardsSvc = inject(RewardsService);
   private readonly router = inject(Router);
   private readonly toastCtrl = inject(ToastController);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly alertCtrl = inject(AlertController);
 
   readonly greeting = greetingForHour();
   readonly userName = computed(() => this.auth.user()?.name.split(' ')[0] ?? '');
@@ -65,6 +67,69 @@ export class HomePage {
   async toggleTask(id: string): Promise<void> {
     const result = await this.tasksSvc.toggle(id);
     await flashToggle(this.toastCtrl, result);
+  }
+
+  /**
+   * Card-body tap on Home: same options as on TasksPage, except Editar
+   * navigates to /tabs/tasks (Home doesn't render the edit modal).
+   */
+  async openActions(taskId: string): Promise<void> {
+    const task = this.tasksSvc.tasks().find((t) => t.id === taskId);
+    if (!task) return;
+
+    const sheet = await this.actionSheetCtrl.create({
+      header: task.title,
+      cssClass: 'tb-action-sheet',
+      buttons: [
+        {
+          text: task.done ? 'Marcar como pendiente' : 'Marcar como completada',
+          icon: task.done ? 'arrow-undo-outline' : 'checkmark-outline',
+          handler: () => {
+            void this.toggleTask(task.id);
+          },
+        },
+        {
+          text: 'Editar en Tareas',
+          icon: 'create-outline',
+          handler: () => {
+            void this.router.navigateByUrl('/tabs/tasks');
+          },
+        },
+        {
+          text: 'Eliminar',
+          icon: 'trash-outline',
+          role: 'destructive',
+          handler: () => {
+            void this.confirmDelete(task.id, task.title);
+          },
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close-outline',
+          role: 'cancel',
+        },
+      ],
+    });
+    await sheet.present();
+  }
+
+  private async confirmDelete(id: string, title: string): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: '¿Eliminar tarea?',
+      message: `"${title}" se eliminará. Esta acción no se puede deshacer.`,
+      cssClass: 'tb-alert',
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        {
+          text: 'Eliminar',
+          role: 'destructive',
+          handler: () => {
+            void this.tasksSvc.remove(id);
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 
   async onClaim(id: string): Promise<void> {
