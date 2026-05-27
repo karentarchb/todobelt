@@ -1,0 +1,7 @@
+{
+  "name": "todo-belt",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

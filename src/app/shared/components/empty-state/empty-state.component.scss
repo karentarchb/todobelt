@@ -1,0 +1,42 @@
+.tb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 36px 20px;
+  border: 1px dashed var(--tb-border-strong);
+  border-radius: var(--tb-r-lg);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.tb-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--tb-r-pill);
+  color: var(--tb-rose);
+  background: rgba(255, 79, 163, 0.10);
+  margin-bottom: 14px;
+  font-size: 22px;
+
+  ion-icon {
+    font-size: 24px;
+  }
+}
+
+.tb-empty__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tb-text-strong);
+  letter-spacing: -0.01em;
+}
+
+.tb-empty__desc {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--tb-text-muted);
+  max-width: 280px;
+}

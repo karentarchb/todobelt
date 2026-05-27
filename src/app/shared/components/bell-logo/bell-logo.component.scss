@@ -1,0 +1,22 @@
+:host {
+  display: inline-flex;
+}
+
+.tb-bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--bell-size, 36px);
+  height: var(--bell-size, 36px);
+  color: var(--tb-text-strong);
+  transition: color var(--tb-dur) var(--tb-ease);
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.tb-bell--tinted {
+  color: var(--tb-rose);
+}

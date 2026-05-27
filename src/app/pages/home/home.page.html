@@ -1,0 +1,105 @@
+<ion-header class="tb-clean">
+  <ion-toolbar>
+    <div class="hm-top">
+      <div class="hm-top__greet">
+        <p class="hm-top__hi">{{ greeting }}</p>
+        <h1 class="hm-top__name">{{ userName() }}</h1>
+      </div>
+      <tb-coin-badge [value]="balance()" size="lg"></tb-coin-badge>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- ============ Mood ============ -->
+  <section class="hm-block tb-anim-rise">
+    <p class="hm-block__hint">¿Cómo te sientes hoy?</p>
+    <tb-mood-selector
+      [options]="moodOptions"
+      [selected]="moodSelected()"
+      (select)="onMood($event)"
+    ></tb-mood-selector>
+  </section>
+
+  <!-- ============ Progress card ============ -->
+  <section class="hm-progress tb-anim-rise">
+    <div class="hm-progress__row">
+      <span class="tb-eyebrow">Hoy</span>
+      <span class="hm-progress__count">
+        {{ completedCount() }} / {{ totalCount() }}
+      </span>
+    </div>
+    <h2 class="hm-progress__title">Tu día va tomando forma.</h2>
+
+    <div class="hm-progress__bar">
+      <span class="hm-progress__fill" [style.width.%]="progress()"></span>
+    </div>
+
+    <p class="hm-progress__sub">
+      Completaste el {{ progress() }}% de tu día.
+    </p>
+  </section>
+
+  <!-- ============ Estadísticas link ============ -->
+  <button
+    type="button"
+    class="hm-stats tb-anim-rise"
+    (click)="goStats()"
+    aria-label="Ver estadísticas"
+  >
+    <span class="hm-stats__icon">
+      <ion-icon name="stats-chart-outline" aria-hidden="true"></ion-icon>
+    </span>
+    <span class="hm-stats__main">
+      <span class="hm-stats__title">Estadísticas</span>
+      <span class="hm-stats__sub">Promedios, sentimientos y récord de enfoque</span>
+    </span>
+    <ion-icon class="hm-stats__chev" name="chevron-forward" aria-hidden="true"></ion-icon>
+  </button>
+
+  <!-- ============ Tasks ============ -->
+  <tb-section-header
+    title="Tus próximas tareas"
+    subtitle="Una a la vez, sin prisa."
+  >
+    <button slot="action" class="hm-link" (click)="goTasks()">
+      Ver todas <ion-icon name="chevron-forward"></ion-icon>
+    </button>
+  </tb-section-header>
+
+  @if (pending().length) {
+    <div class="hm-list tb-stagger">
+      @for (t of pending(); track t.id) {
+        <tb-task-card [task]="t" (toggle)="toggleTask($event)"></tb-task-card>
+      }
+    </div>
+  } @else {
+    <tb-empty-state
+      icon="checkmark-done-outline"
+      title="Tu día está limpio"
+      description="Tómate un respiro o agrega algo nuevo cuando estés lista."
+    ></tb-empty-state>
+  }
+
+  <!-- ============ Rewards ============ -->
+  <tb-section-header
+    title="Recompensas para ti"
+    subtitle="Pequeñas pausas que te recuerdan que avanzas."
+  >
+    <button slot="action" class="hm-link" (click)="goRewards()">
+      Ver todas <ion-icon name="chevron-forward"></ion-icon>
+    </button>
+  </tb-section-header>
+
+  <div class="hm-list tb-stagger">
+    @for (r of featuredRewards(); track r.id) {
+      <tb-reward-card
+        [reward]="r"
+        [affordable]="balance() >= r.cost"
+        (claim)="onClaim($event)"
+      ></tb-reward-card>
+    }
+  </div>
+
+  <div class="hm-tail"></div>
+</ion-content>

@@ -1,0 +1,181 @@
+<ion-header class="tb-clean">
+  <ion-toolbar>
+    <div class="tk-top">
+      <h1 class="tk-top__title">Tareas</h1>
+      <button class="tk-add" (click)="openAdd()" aria-label="Crear tarea">
+        <ion-icon name="add" aria-hidden="true"></ion-icon>
+      </button>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Daily coin cap progress -->
+  <section class="tk-cap" aria-label="Tope diario de monedas">
+    <div class="tk-cap__row">
+      <span class="tb-eyebrow">Hoy</span>
+      <span class="tk-cap__count">
+        {{ todayEarned() }} / {{ dailyCap }} monedas
+      </span>
+    </div>
+    <div class="tk-cap__bar">
+      <span class="tk-cap__fill" [style.width.%]="capProgress()"></span>
+    </div>
+  </section>
+
+  <!-- Quick-pick templates -->
+  <section class="tk-templates" aria-label="Plantillas rápidas">
+    <p class="tk-templates__hint">Toca para agregar al instante</p>
+    <div class="tk-templates__row">
+      @for (t of templates; track t.id) {
+        <button
+          type="button"
+          class="tk-template"
+          (click)="useTemplate(t)"
+        >
+          <span class="tk-template__icon" [style.color]="accentForCategory(t.category)">
+            <ion-icon [name]="iconForTemplate(t)" aria-hidden="true"></ion-icon>
+          </span>
+          <span class="tk-template__main">
+            <span class="tk-template__title">{{ t.title }}</span>
+            <span class="tk-template__meta">
+              @if (t.defaultTime) {
+                <span class="tk-template__time">{{ t.defaultTime }}</span>
+              }
+              @if (t.hint) {
+                <span class="tk-template__sep" aria-hidden="true">·</span>
+                <span class="tk-template__sub">{{ t.hint }}</span>
+              }
+            </span>
+          </span>
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- Segmented filters -->
+  <nav class="tk-segs" role="tablist">
+    <button
+      type="button"
+      class="tk-seg"
+      [class.tk-seg--active]="filter() === 'all'"
+      (click)="setFilter('all')"
+      role="tab"
+    >
+      Todas <span class="tk-seg__count">{{ counts().all }}</span>
+    </button>
+    <button
+      type="button"
+      class="tk-seg"
+      [class.tk-seg--active]="filter() === 'today'"
+      (click)="setFilter('today')"
+      role="tab"
+    >
+      Pendientes <span class="tk-seg__count">{{ counts().today }}</span>
+    </button>
+    <button
+      type="button"
+      class="tk-seg"
+      [class.tk-seg--active]="filter() === 'done'"
+      (click)="setFilter('done')"
+      role="tab"
+    >
+      Hechas <span class="tk-seg__count">{{ counts().done }}</span>
+    </button>
+  </nav>
+
+  @if (visible().length) {
+    <div class="tk-list tb-stagger">
+      @for (t of visible(); track t.id) {
+        <tb-task-card [task]="t" (toggle)="toggleTask($event)"></tb-task-card>
+      }
+    </div>
+  } @else {
+    <tb-empty-state
+      icon="leaf-outline"
+      title="Nada por aquí"
+      description="Cuando agregues tareas, aparecerán en este espacio."
+    >
+      <div class="tk-empty-cta">
+        <tb-primary-button (pressed)="openAdd()">Crear tarea</tb-primary-button>
+      </div>
+    </tb-empty-state>
+  }
+
+  <div class="tk-tail"></div>
+</ion-content>
+
+<!-- ============ Add modal ============ -->
+<ion-modal
+  [isOpen]="showAdd()"
+  (didDismiss)="closeAdd()"
+  [breakpoints]="[0, 1]"
+  [initialBreakpoint]="1"
+  handle="true"
+>
+  <ng-template>
+    <div class="tk-sheet">
+      <header class="tk-sheet__head">
+        <h2>Nueva tarea</h2>
+        <p>Tómate un momento para pensarla con calma.</p>
+      </header>
+
+      <label class="tk-field">
+        <span class="tk-field__label">Título</span>
+        <input
+          type="text"
+          placeholder="¿Qué quieres lograr?"
+          [ngModel]="draftTitle()"
+          (ngModelChange)="draftTitle.set($event)"
+          autofocus
+        />
+      </label>
+
+      <div class="tk-field">
+        <span class="tk-field__label">Categoría</span>
+        <div class="tk-chips">
+          @for (c of categories; track c.key) {
+            <button
+              type="button"
+              class="tk-chip"
+              [class.tk-chip--active]="draftCategory() === c.key"
+              (click)="draftCategory.set(c.key)"
+              [style.--chip-accent]="c.accent"
+            >
+              <ion-icon [name]="c.icon" aria-hidden="true"></ion-icon>
+              <span>{{ c.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="tk-field">
+        <span class="tk-field__label">Prioridad</span>
+        <div class="tk-chips tk-chips--3">
+          @for (p of priorities; track p.key) {
+            <button
+              type="button"
+              class="tk-chip tk-chip--prio"
+              [class.tk-chip--active]="draftPriority() === p.key"
+              [attr.data-priority]="p.key"
+              (click)="draftPriority.set(p.key)"
+            >
+              <span class="tk-chip__dot" aria-hidden="true"></span>
+              <span>{{ p.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="tk-sheet__actions">
+        <tb-primary-button
+          [block]="true"
+          [disabled]="!draftTitle().trim()"
+          (pressed)="submit()"
+        >
+          Crear tarea
+        </tb-primary-button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

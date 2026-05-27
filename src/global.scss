@@ -1,0 +1,194 @@
+/* =========================================
+   TODO BELT · Global Stylesheet
+   ========================================= */
+
+/* Ionic core */
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/display.css';
+
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/float-elements.css';
+@import '@ionic/angular/css/text-alignment.css';
+@import '@ionic/angular/css/text-transformation.css';
+@import '@ionic/angular/css/flex-utils.css';
+
+/* Project styles */
+@import 'styles/mixins';
+@import 'styles/animations';
+
+/* -------- Base resets -------- */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--tb-bg-0);
+  color: var(--tb-text);
+  font-family: var(--tb-font-sans);
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
+  -webkit-tap-highlight-color: transparent;
+  text-rendering: optimizeLegibility;
+}
+
+ion-app,
+ion-content {
+  --background: var(--tb-bg-0);
+  --color: var(--tb-text);
+}
+
+ion-toolbar {
+  --background: var(--tb-bg-0);
+  --border-color: transparent;
+  --color: var(--tb-text-strong);
+  --min-height: 56px;
+}
+
+ion-header.tb-clean ion-toolbar {
+  --background: transparent;
+}
+
+ion-content {
+  --padding-start: 20px;
+  --padding-end: 20px;
+}
+
+ion-item {
+  --background: transparent;
+  --background-hover: transparent;
+  --border-color: var(--tb-border);
+  --color: var(--tb-text);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+}
+
+ion-input,
+ion-textarea {
+  --color: var(--tb-text-strong);
+  --placeholder-color: var(--tb-text-faint);
+  --placeholder-opacity: 1;
+}
+
+ion-button {
+  --border-radius: var(--tb-r-md);
+  text-transform: none;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+ion-icon {
+  color: inherit;
+}
+
+/* -------- Typographic utilities -------- */
+.tb-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tb-rose);
+}
+
+.tb-h1 { @include tb-display(34px); }
+.tb-h2 { @include tb-display(24px); }
+.tb-h3 { @include tb-display(18px); }
+
+.tb-body {
+  font-size: 15px;
+  color: var(--tb-text);
+  line-height: 1.55;
+}
+
+.tb-muted {
+  @include tb-muted;
+  font-size: 14px;
+}
+
+.tb-divider {
+  height: 1px;
+  background: var(--tb-border);
+  margin: var(--tb-s-4) 0;
+}
+
+/* -------- Premium primary button -------- */
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tb-s-2);
+  padding: 14px 22px;
+  min-height: 52px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  border-radius: var(--tb-r-pill);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform var(--tb-dur-fast) var(--tb-ease),
+    background var(--tb-dur-fast) var(--tb-ease),
+    box-shadow var(--tb-dur) var(--tb-ease);
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.tb-btn--primary {
+  background: var(--tb-rose);
+  color: #fff;
+  box-shadow: var(--tb-shadow-glow);
+
+  &:hover {
+    background: var(--tb-rose-soft);
+  }
+}
+
+.tb-btn--ghost {
+  background: transparent;
+  color: var(--tb-text);
+  border-color: var(--tb-border-strong);
+
+  &:hover {
+    background: var(--tb-bg-3);
+  }
+}
+
+.tb-btn--block {
+  width: 100%;
+}
+
+/* -------- Modal / popover surface defaults -------- */
+ion-modal {
+  --background: var(--tb-bg-3);
+  --border-radius: var(--tb-r-xl);
+}
+
+ion-loading,
+ion-toast,
+ion-alert {
+  --background: var(--tb-bg-3);
+  --color: var(--tb-text-strong);
+}
+
+/* -------- Tab bar -------- */
+ion-tab-bar {
+  --background: rgba(17, 17, 17, 0.85);
+  -webkit-backdrop-filter: saturate(160%) blur(20px);
+  backdrop-filter: saturate(160%) blur(20px);
+  border-top: 1px solid var(--tb-border);
+  padding-top: 4px;
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(64px + env(safe-area-inset-bottom));
+}
+
+ion-tab-button {
+  --color: var(--tb-text-muted);
+  --color-selected: var(--tb-rose);
+  font-size: 11px;
+  font-weight: 500;
+}

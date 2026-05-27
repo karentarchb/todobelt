@@ -1,0 +1,136 @@
+<ion-header class="tb-clean">
+  <ion-toolbar>
+    <h1 class="pf-title">Perfil</h1>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <!-- Identity -->
+  <section class="pf-id tb-anim-rise">
+    <div class="pf-avatar">{{ initialsFor(displayName()) }}</div>
+
+    @if (editing()) {
+      <div class="pf-edit">
+        <label class="pf-edit__field">
+          <span class="pf-edit__label">Nombre</span>
+          <input
+            type="text"
+            class="pf-edit__input"
+            placeholder="¿Cómo te llamas?"
+            [ngModel]="draftName()"
+            (ngModelChange)="draftName.set($event)"
+            maxlength="48"
+            autofocus
+          />
+        </label>
+        <label class="pf-edit__field">
+          <span class="pf-edit__label">Bio</span>
+          <textarea
+            class="pf-edit__input pf-edit__input--area"
+            placeholder="Algo corto sobre ti."
+            [ngModel]="draftBio()"
+            (ngModelChange)="draftBio.set($event)"
+            maxlength="140"
+            rows="3"
+          ></textarea>
+        </label>
+
+        <div class="pf-edit__actions">
+          <button type="button" class="pf-edit__cancel" (click)="cancelEdit()">
+            Cancelar
+          </button>
+          <tb-primary-button [loading]="saving()" (pressed)="saveEdit()">
+            Guardar
+          </tb-primary-button>
+        </div>
+      </div>
+    } @else {
+      <div class="pf-name">{{ displayName() }}</div>
+      <div class="pf-email">{{ user()?.email }}</div>
+
+      @if (bioText()) {
+        <p class="pf-bio">{{ bioText() }}</p>
+      }
+
+      <button type="button" class="pf-edit-trigger" (click)="startEdit()">
+        <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
+        Editar perfil
+      </button>
+
+      @if (mood(); as m) {
+        <div class="pf-mood">
+          <span class="pf-mood__emoji">{{ m.emoji }}</span>
+          <span>Te sientes {{ m.label.toLowerCase() }}</span>
+        </div>
+      }
+    }
+  </section>
+
+  <!-- Stats -->
+  <section class="pf-stats tb-anim-rise">
+    <div class="pf-stat">
+      <span class="pf-stat__value">{{ stats().balance }}</span>
+      <span class="pf-stat__label">Monedas</span>
+    </div>
+    <div class="pf-stat">
+      <span class="pf-stat__value">{{ stats().done }}</span>
+      <span class="pf-stat__label">Tareas hechas</span>
+    </div>
+    <div class="pf-stat">
+      <span class="pf-stat__value">{{ stats().earned }}</span>
+      <span class="pf-stat__label">Ganadas total</span>
+    </div>
+  </section>
+
+  <!-- Settings list -->
+  <section class="pf-list">
+    <button type="button" class="pf-row">
+      <span class="pf-row__icon"><ion-icon name="notifications-outline"></ion-icon></span>
+      <span class="pf-row__main">
+        <span class="pf-row__title">Notificaciones</span>
+        <span class="pf-row__sub">Recordatorios suaves para tu día</span>
+      </span>
+      <ion-icon class="pf-row__chev" name="chevron-forward"></ion-icon>
+    </button>
+
+    <button type="button" class="pf-row">
+      <span class="pf-row__icon"><ion-icon name="color-palette-outline"></ion-icon></span>
+      <span class="pf-row__main">
+        <span class="pf-row__title">Tema</span>
+        <span class="pf-row__sub">Oscuro premium</span>
+      </span>
+      <ion-icon class="pf-row__chev" name="chevron-forward"></ion-icon>
+    </button>
+
+    <button type="button" class="pf-row">
+      <span class="pf-row__icon"><ion-icon name="shield-checkmark-outline"></ion-icon></span>
+      <span class="pf-row__main">
+        <span class="pf-row__title">Privacidad</span>
+        <span class="pf-row__sub">Tu información, tu control</span>
+      </span>
+      <ion-icon class="pf-row__chev" name="chevron-forward"></ion-icon>
+    </button>
+
+    <button type="button" class="pf-row">
+      <span class="pf-row__icon"><ion-icon name="information-circle-outline"></ion-icon></span>
+      <span class="pf-row__main">
+        <span class="pf-row__title">Acerca de TODO BELT</span>
+        <span class="pf-row__sub">Versión 1.0 · Productividad amable</span>
+      </span>
+      <ion-icon class="pf-row__chev" name="chevron-forward"></ion-icon>
+    </button>
+  </section>
+
+  <div class="pf-logout">
+    <tb-primary-button variant="ghost" [block]="true" (pressed)="logout()">
+      Cerrar sesión
+    </tb-primary-button>
+  </div>
+
+  <div class="pf-brand">
+    <tb-bell-logo [size]="20"></tb-bell-logo>
+    <span>TODO BELT</span>
+  </div>
+
+  <div class="pf-tail"></div>
+</ion-content>

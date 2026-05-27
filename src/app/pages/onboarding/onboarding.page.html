@@ -1,0 +1,129 @@
+<ion-content [fullscreen]="true" scrollY="false" class="ob-content">
+  <!-- Skip control -->
+  <button type="button" class="ob-skip" (click)="skip()">
+    Omitir
+  </button>
+
+  <swiper-container
+    #swiperEl
+    class="ob-swiper"
+    [attr.slides-per-view]="1"
+    [attr.speed]="520"
+    [attr.pagination]="false"
+    [attr.effect]="'slide'"
+    [attr.touch-events-target]="'container'"
+    (swiperslidechange)="onSlideChange($event)"
+  >
+    <!-- ============= Slide 1 — image only (no copy) ============= -->
+    <swiper-slide class="ob-slide ob-slide--photo">
+      <figure class="ob-art ob-art--photo">
+        <img
+          src="assets/slide1.png"
+          alt=""
+          class="ob-art__img"
+          decoding="async"
+          aria-hidden="true"
+        />
+        <span class="ob-art__veil" aria-hidden="true"></span>
+      </figure>
+    </swiper-slide>
+
+    <!-- ============= Slide 2 — rewards concept ============= -->
+    <swiper-slide class="ob-slide">
+      <figure class="ob-art ob-art--scene">
+        <div class="ob-orbit" aria-hidden="true">
+          <span class="ob-orbit__ring ob-orbit__ring--lg"></span>
+          <span class="ob-orbit__ring ob-orbit__ring--md"></span>
+          <span class="ob-orbit__ring ob-orbit__ring--sm"></span>
+
+          <span class="ob-chip ob-chip--coin">
+            <span class="ob-chip__dot"></span>
+            <span>+8</span>
+          </span>
+          <span class="ob-chip ob-chip--coffee">
+            <ion-icon name="cafe-outline"></ion-icon>
+            <span>Café</span>
+          </span>
+          <span class="ob-chip ob-chip--ice">
+            <ion-icon name="ice-cream-outline"></ion-icon>
+            <span>Helado</span>
+          </span>
+          <span class="ob-chip ob-chip--break">
+            <ion-icon name="leaf-outline"></ion-icon>
+            <span>Pausa</span>
+          </span>
+
+          <span class="ob-center">
+            <ion-icon name="sparkles-outline"></ion-icon>
+          </span>
+        </div>
+      </figure>
+
+      <div class="ob-copy tb-anim-rise">
+        <span class="tb-eyebrow">{{ slides[1].eyebrow }}</span>
+        <h1 class="ob-title">{{ slides[1].title }}</h1>
+        <p class="ob-subtitle">{{ slides[1].subtitle }}</p>
+      </div>
+    </swiper-slide>
+
+    <!-- ============= Slide 3 — focus & CTA ============= -->
+    <swiper-slide class="ob-slide">
+      <figure class="ob-art ob-art--focus">
+        <div class="ob-focus" aria-hidden="true">
+          <svg viewBox="0 0 220 220" class="ob-focus__ring">
+            <circle
+              cx="110" cy="110" r="92"
+              fill="none"
+              stroke="rgba(255,255,255,0.06)"
+              stroke-width="6"
+            />
+            <circle
+              cx="110" cy="110" r="92"
+              fill="none"
+              stroke="url(#tbGrad)"
+              stroke-width="6"
+              stroke-linecap="round"
+              stroke-dasharray="430 580"
+              transform="rotate(-90 110 110)"
+            />
+            <defs>
+              <linearGradient id="tbGrad" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#ff4fa3" />
+                <stop offset="1" stop-color="#b06cff" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <div class="ob-focus__center">
+            <tb-bell-logo [size]="48" [tinted]="true"></tb-bell-logo>
+          </div>
+        </div>
+      </figure>
+
+      <div class="ob-copy tb-anim-rise">
+        <span class="tb-eyebrow">{{ slides[2].eyebrow }}</span>
+        <h1 class="ob-title">{{ slides[2].title }}</h1>
+        <p class="ob-subtitle">{{ slides[2].subtitle }}</p>
+      </div>
+    </swiper-slide>
+  </swiper-container>
+
+  <!-- Bottom controls (real, not painted) -->
+  <footer class="ob-footer">
+    <nav class="ob-dots" aria-label="Indicador de slide">
+      @for (s of slides; track $index) {
+        <button
+          type="button"
+          class="ob-dot"
+          [class.ob-dot--active]="$index === activeIndex()"
+          (click)="goTo($index)"
+          [attr.aria-label]="'Ir al paso ' + ($index + 1)"
+        ></button>
+      }
+    </nav>
+
+    <tb-primary-button [block]="true" (pressed)="next()">
+      {{ isLast() ? 'Comenzar' : 'Continuar' }}
+    </tb-primary-button>
+  </footer>
+</ion-content>

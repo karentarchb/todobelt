@@ -1,0 +1,78 @@
+/* ============================================================
+   TODO BELT · Mixins
+   ============================================================ */
+
+@mixin tb-card($radius: var(--tb-r-lg)) {
+  background: var(--tb-bg-2);
+  border: 1px solid var(--tb-border);
+  border-radius: $radius;
+  box-shadow: var(--tb-shadow-sm);
+}
+
+@mixin tb-glass($opacity: 0.55) {
+  background: rgba(22, 22, 29, $opacity);
+  -webkit-backdrop-filter: saturate(140%) blur(22px);
+  backdrop-filter: saturate(140%) blur(22px);
+  border: 1px solid var(--tb-border);
+}
+
+@mixin tb-hairline-bottom {
+  border-bottom: 1px solid var(--tb-border);
+}
+
+@mixin tb-text-strong {
+  color: var(--tb-text-strong);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@mixin tb-display($size: 28px) {
+  font-family: var(--tb-font-display);
+  font-weight: 600;
+  font-size: $size;
+  letter-spacing: -0.02em;
+  color: var(--tb-text-strong);
+  line-height: 1.15;
+}
+
+@mixin tb-muted {
+  color: var(--tb-text-muted);
+  font-weight: 400;
+}
+
+@mixin tb-press {
+  transition:
+    transform var(--tb-dur-fast) var(--tb-ease),
+    background var(--tb-dur-fast) var(--tb-ease);
+
+  &:active {
+    transform: scale(0.97);
+  }
+}
+
+@mixin tb-focus-ring {
+  outline: none;
+
+  &:focus-visible {
+    box-shadow:
+      0 0 0 2px var(--tb-bg-0),
+      0 0 0 3px var(--tb-rose);
+  }
+}
+
+@mixin tb-scrollbar-hidden {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+}
+
+@mixin tb-safe-top {
+  padding-top: max(var(--tb-s-5), env(safe-area-inset-top));
+}
+
+@mixin tb-safe-bottom {
+  padding-bottom: max(var(--tb-s-5), env(safe-area-inset-bottom));
+}
