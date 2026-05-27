@@ -644,6 +644,45 @@ con tus credenciales.
    [§8 Reglas de Firestore](#8-reglas-de-firestore-copia-lista).
 5. Click en **Publish**.
 
+#### c) Aplicación Android (necesario para Google Sign-In en el APK)
+
+`signInWithPopup` no funciona en WebViews de Capacitor (Google
+bloquea OAuth en WebViews embebidos por política de seguridad). El
+código detecta automáticamente el shell nativo y usa el plugin
+`@capacitor-firebase/authentication`, pero el plugin requiere
+configuración nativa en Firebase Console:
+
+1. Firebase Console → **Project settings** (rueda dentada) → **General**
+   → sección **Your apps** → **Add app** → icono Android.
+2. **Android package name:** `app.todobelt` (exacto, debe coincidir
+   con `capacitor.config.ts`).
+3. **App nickname:** TODO BELT Android (libre).
+4. **Debug signing certificate SHA-1:** pegar el SHA-1 del keystore
+   debug local. En esta máquina ya quedó calculado:
+
+   ```text
+   D7:59:8C:19:23:83:2F:E6:21:8F:C0:32:B4:9C:E7:49:E2:EA:52:07
+   ```
+
+   Si lo necesitas regenerar en otra máquina:
+
+   ```bash
+   keytool -list -v \
+     -keystore "$USERPROFILE/.android/debug.keystore" \
+     -alias androiddebugkey -storepass android -keypass android | grep SHA1
+   ```
+
+5. **Register app** → descarga el `google-services.json`.
+6. Coloca el archivo en `android/app/google-services.json` del repo
+   (la carpeta `android/` está en `.gitignore`, así que cada
+   desarrollador debe descargarlo en su propia copia).
+7. Repite el SHA-1 para el keystore de release cuando vayas a
+   publicar a Google Play (el SHA-1 de Play App Signing también).
+
+> Sin estos pasos, el botón "Continuar con Google" en el APK lanzará
+> un error `auth/internal-error` o cerrará el sheet sin completar el
+> sign-in.
+
 ### 6.4 Reglas de Firestore
 
 Las reglas blindan cada subcolección del usuario para que **sólo el

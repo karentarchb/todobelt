@@ -5,6 +5,7 @@ import {
   User,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  signInWithCredential,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -91,10 +92,24 @@ export class AuthService {
   }
 
   /**
-   * Google sign-in via popup. Works on web; for packaged Capacitor builds,
-   * swap to signInWithRedirect or a native Google sign-in plugin.
+   * Google sign-in. Uses the native Capacitor plugin on Android/iOS
+   * (Google blocks signInWithPopup in embedded WebViews) and the web
+   * popup flow in the browser. After the native flow returns an
+   * idToken / accessToken we exchange it for a Firebase credential so
+   * the rest of the auth pipeline behaves identically across platforms.
    */
   async loginWithGoogle(): Promise<UserProfile> {
+    if (this.isCapacitorNative()) {
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithGoogle();
+      const credential = GoogleAuthProvider.credential(
+        result.credential?.idToken ?? null,
+        result.credential?.accessToken ?? null,
+      );
+      const cred = await signInWithCredential(this.firebase.auth, credential);
+      return this.toProfile(cred.user);
+    }
+
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     const cred = await signInWithPopup(this.firebase.auth, provider);
@@ -102,10 +117,23 @@ export class AuthService {
   }
 
   /**
-   * Apple sign-in via OAuthProvider('apple.com'). Requires Apple provider
-   * enabled in Firebase console and a configured Service ID + return URL.
+   * Apple sign-in. Uses the native Capacitor plugin on iOS (where the
+   * system Apple Sign-In sheet is the only legitimate path) and the web
+   * popup flow elsewhere. Requires the Apple provider enabled in
+   * Firebase Console plus a configured Service ID + return URL.
    */
   async loginWithApple(): Promise<UserProfile> {
+    if (this.isCapacitorNative()) {
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const result = await FirebaseAuthentication.signInWithApple();
+      const credential = new OAuthProvider('apple.com').credential({
+        idToken: result.credential?.idToken ?? undefined,
+        rawNonce: result.credential?.nonce ?? undefined,
+      });
+      const cred = await signInWithCredential(this.firebase.auth, credential);
+      return this.toProfile(cred.user);
+    }
+
     const provider = new OAuthProvider('apple.com');
     provider.addScope('email');
     provider.addScope('name');
@@ -113,7 +141,24 @@ export class AuthService {
     return this.toProfile(cred.user);
   }
 
+  /** True when running inside a Capacitor native shell (Android / iOS). */
+  private isCapacitorNative(): boolean {
+    const cap = (globalThis as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    return !!cap?.isNativePlatform?.();
+  }
+
   async logout(): Promise<void> {
+    // On native, also clear the plugin-side session (Google's cached
+    // account choice, Apple's authorisation). Otherwise the next sign-in
+    // attempt would auto-select the previous account without a prompt.
+    if (this.isCapacitorNative()) {
+      try {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        await FirebaseAuthentication.signOut();
+      } catch {
+        /* plugin may be absent in some builds; falling through is safe */
+      }
+    }
     await signOut(this.firebase.auth);
   }
 
