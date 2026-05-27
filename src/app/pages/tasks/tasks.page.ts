@@ -18,8 +18,6 @@ import { TaskCardComponent } from '@shared/components/task-card/task-card.compon
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { PrimaryButtonComponent } from '@shared/components/primary-button/primary-button.component';
 
-type StatusFilter = 'all' | 'today' | 'done';
-
 @Component({
   selector: 'app-tasks',
   standalone: true,
@@ -42,8 +40,10 @@ export class TasksPage {
   private readonly alertCtrl = inject(AlertController);
   private readonly router = inject(Router);
 
-  readonly statusFilter = signal<StatusFilter>('all');
   readonly categoryFilter = signal<TaskCategoryId | null>(null);
+
+  /** Completed tasks live in a collapsible drawer at the bottom. */
+  readonly drawerOpen = signal(false);
 
   readonly showAdd = signal(false);
   readonly editingId = signal<string | null>(null);
@@ -51,6 +51,9 @@ export class TasksPage {
   readonly draftTitle = signal('');
   readonly draftCategory = signal<TaskCategoryId>('personal');
   readonly draftPriority = signal<TaskPriority>('medium');
+  /** Time-of-day picker value (HH:mm). Empty string = no specific time. */
+  readonly draftDueTime = signal<string>('');
+  readonly draftRecurrence = signal<'none' | 'daily' | 'weekly'>('none');
 
   readonly categories = this.categoriesSvc.categories;
 
@@ -70,40 +73,31 @@ export class TasksPage {
     return Math.min(100, Math.round((this.todayEarned() / cap) * 100));
   });
 
-  readonly visible = computed(() => {
-    let result = this.tasksSvc.tasks();
-    switch (this.statusFilter()) {
-      case 'today':
-        result = result.filter((t) => !t.done);
-        break;
-      case 'done':
-        result = result.filter((t) => t.done);
-        break;
-    }
+  readonly pendingTasks = computed(() => {
+    let result = this.tasksSvc.todayPending();
     const cat = this.categoryFilter();
     if (cat) result = result.filter((t) => t.category === cat);
     return result;
   });
 
-  readonly counts = computed(() => ({
-    all: this.tasksSvc.tasks().length,
-    today: this.tasksSvc.pending().length,
-    done: this.tasksSvc.completed().length,
-  }));
+  readonly completedTasks = computed(() => {
+    let result = this.tasksSvc.completed().slice().sort((a, b) => {
+      const at = new Date(a.completedAt ?? a.createdAt).getTime();
+      const bt = new Date(b.completedAt ?? b.createdAt).getTime();
+      return bt - at;
+    });
+    const cat = this.categoryFilter();
+    if (cat) result = result.filter((t) => t.category === cat);
+    return result;
+  });
 
-  // ----------- Card interactions -----------
+  // ---------- Card interactions ----------
 
-  /** Direct toggle when the user taps the check circle. */
   async toggleTask(id: string): Promise<void> {
     const result = await this.tasksSvc.toggle(id);
     await flashToggle(this.toastCtrl, result);
   }
 
-  /**
-   * Card-body tap: open an action sheet so the user explicitly picks
-   * what they want (complete / edit / delete) instead of an accidental
-   * toggle on every touch.
-   */
   async openActions(taskId: string): Promise<void> {
     const task = this.tasksSvc.tasks().find((t) => t.id === taskId);
     if (!task) return;
@@ -174,80 +168,7 @@ export class TasksPage {
     await toast.present();
   }
 
-  // ----------- Templates -----------
-
-  async useTemplate(template: TaskTemplate): Promise<void> {
-    await this.tasksSvc.addFromTemplate(template);
-    const toast = await this.toastCtrl.create({
-      message: `Agregada: ${template.title}`,
-      duration: 1600,
-      position: 'top',
-      cssClass: 'tb-toast',
-    });
-    await toast.present();
-  }
-
-  iconForTemplate(t: TaskTemplate): string {
-    return t.icon ?? this.iconForCategory(t.category);
-  }
-
-  iconForCategory(id: TaskCategoryId): string {
-    return this.categoriesSvc.byId(id)?.icon ?? 'pricetag-outline';
-  }
-
-  accentForCategory(id: TaskCategoryId): string {
-    const cat = this.categoriesSvc.byId(id);
-    return cat ? ACCENT_VAR[cat.accent] : 'var(--tb-text-muted)';
-  }
-
-  // ----------- Add / edit modal -----------
-
-  openAdd(): void {
-    this.editingId.set(null);
-    this.draftTitle.set('');
-    const first = this.categories()[0];
-    this.draftCategory.set(first?.id ?? 'personal');
-    this.draftPriority.set('medium');
-    this.showAdd.set(true);
-  }
-
-  openEdit(task: Task): void {
-    this.editingId.set(task.id);
-    this.draftTitle.set(task.title);
-    this.draftCategory.set(task.category);
-    this.draftPriority.set(task.priority);
-    this.showAdd.set(true);
-  }
-
-  closeAdd(): void {
-    this.showAdd.set(false);
-    this.editingId.set(null);
-  }
-
-  async submit(): Promise<void> {
-    const title = this.draftTitle().trim();
-    if (!title) return;
-
-    const id = this.editingId();
-    if (id) {
-      await this.tasksSvc.update(id, {
-        title,
-        category: this.draftCategory(),
-        priority: this.draftPriority(),
-      });
-    } else {
-      await this.tasksSvc.add({
-        title,
-        category: this.draftCategory(),
-        priority: this.draftPriority(),
-      });
-    }
-    this.closeAdd();
-  }
-
-  setStatus(f: StatusFilter): void {
-    this.statusFilter.set(f);
-  }
+  // ---------- Filters / drawer ----------
 
   toggleCategoryFilter(id: TaskCategoryId): void {
     this.categoryFilter.update((current) => (current === id ? null : id));
@@ -257,7 +178,109 @@ export class TasksPage {
     this.categoryFilter.set(null);
   }
 
+  toggleDrawer(): void {
+    this.drawerOpen.update((v) => !v);
+  }
+
+  // ---------- Add / edit modal ----------
+
+  openAdd(): void {
+    this.editingId.set(null);
+    this.draftTitle.set('');
+    const first = this.categories()[0];
+    this.draftCategory.set(first?.id ?? 'personal');
+    this.draftPriority.set('medium');
+    this.draftDueTime.set('');
+    this.draftRecurrence.set('none');
+    this.showAdd.set(true);
+  }
+
+  openEdit(task: Task): void {
+    this.editingId.set(task.id);
+    this.draftTitle.set(task.title);
+    this.draftCategory.set(task.category);
+    this.draftPriority.set(task.priority);
+    this.draftDueTime.set(this.extractTime(task.dueAt));
+    this.draftRecurrence.set(task.recurrence ?? 'none');
+    this.showAdd.set(true);
+  }
+
+  closeAdd(): void {
+    this.showAdd.set(false);
+    this.editingId.set(null);
+  }
+
+  /** Fill the form from a template instead of auto-adding the task —
+   *  the user can still tweak the title / category / time before saving. */
+  useTemplate(template: TaskTemplate): void {
+    this.draftTitle.set(template.title);
+    this.draftCategory.set(template.category);
+    this.draftPriority.set(template.priority);
+    this.draftDueTime.set(template.defaultTime ?? '');
+    this.draftRecurrence.set(template.recurrence ?? 'none');
+  }
+
+  async submit(): Promise<void> {
+    const title = this.draftTitle().trim();
+    if (!title) return;
+
+    const dueAt = this.draftDueTime() ? this.todayAt(this.draftDueTime()) : undefined;
+    const rec = this.draftRecurrence();
+    const recurrence = rec === 'none' ? undefined : rec;
+
+    const id = this.editingId();
+    if (id) {
+      await this.tasksSvc.update(id, {
+        title,
+        category: this.draftCategory(),
+        priority: this.draftPriority(),
+        dueAt,
+        recurrence,
+      });
+    } else {
+      await this.tasksSvc.add({
+        title,
+        category: this.draftCategory(),
+        priority: this.draftPriority(),
+        dueAt,
+        recurrence,
+      });
+    }
+    this.closeAdd();
+  }
+
+  iconForCategory(id: TaskCategoryId): string {
+    return this.categoriesSvc.byId(id)?.icon ?? 'pricetag-outline';
+  }
+
+  iconForTemplate(t: TaskTemplate): string {
+    return t.icon ?? this.iconForCategory(t.category);
+  }
+
+  accentForCategory(id: TaskCategoryId): string {
+    const cat = this.categoriesSvc.byId(id);
+    return cat ? ACCENT_VAR[cat.accent] : 'var(--tb-text-muted)';
+  }
+
   goCategories(): void {
     void this.router.navigateByUrl('/tabs/categories');
+  }
+
+  // ---------- Date helpers ----------
+
+  private todayAt(hhmm: string): string {
+    const [h, m] = hhmm.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h ?? 0, m ?? 0, 0, 0);
+    return d.toISOString();
+  }
+
+  private extractTime(iso: string | undefined): string {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const h = d.getHours();
+    const m = d.getMinutes();
+    if (h === 0 && m === 0) return '';
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
 }

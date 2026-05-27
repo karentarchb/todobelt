@@ -7,6 +7,13 @@ export type TaskPriority = 'low' | 'medium' | 'high';
  */
 export type TaskCategoryId = string;
 
+/**
+ * Repetition pattern for a task. When set, completing the task creates a
+ * fresh task instance for the next occurrence and notifications are
+ * scheduled to repeat on the OS clock (when a native build is used).
+ */
+export type TaskRecurrence = 'daily' | 'weekly';
+
 export interface Task {
   id: string;
   title: string;
@@ -22,6 +29,8 @@ export interface Task {
   /** ISO timestamp when marked done */
   completedAt?: string;
   done: boolean;
+  /** When set, the task repeats on this cadence. */
+  recurrence?: TaskRecurrence;
 }
 
 export interface NewTaskInput {
@@ -31,6 +40,7 @@ export interface NewTaskInput {
   priority?: TaskPriority;
   dueAt?: string;
   reward?: number;
+  recurrence?: TaskRecurrence;
 }
 
 /**
@@ -48,4 +58,6 @@ export interface TaskTemplate {
   icon?: string;
   /** Optional one-line context shown under the title. */
   hint?: string;
+  /** Default recurrence to apply when this template is used. */
+  recurrence?: TaskRecurrence;
 }

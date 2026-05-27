@@ -30,7 +30,18 @@ import { relativeDay } from '@core/helpers/date.helper';
       </button>
 
       <div class="tb-task__body">
-        <h4 class="tb-task__title">{{ task.title }}</h4>
+        <div class="tb-task__title-row">
+          <h4 class="tb-task__title">{{ task.title }}</h4>
+          @if (task.recurrence) {
+            <span
+              class="tb-task__repeat"
+              [attr.aria-label]="task.recurrence === 'daily' ? 'Tarea diaria' : 'Tarea semanal'"
+              [title]="task.recurrence === 'daily' ? 'Se repite diario' : 'Se repite semanal'"
+            >
+              <ion-icon name="repeat-outline" aria-hidden="true" />
+            </span>
+          }
+        </div>
 
         <div class="tb-task__meta">
           <span class="tb-task__chip" [style.color]="categoryAccent()">
@@ -82,7 +93,17 @@ export class TaskCardComponent {
   };
 
   get due(): string {
-    return relativeDay(this.task.dueAt);
+    if (!this.task.dueAt) return '';
+    const day = relativeDay(this.task.dueAt);
+    const d = new Date(this.task.dueAt);
+    const h = d.getHours();
+    const m = d.getMinutes();
+    // Only show time if dueAt was set with a specific time of day
+    // (skip midnight 00:00 which means "no specific time").
+    if (h === 0 && m === 0) return day;
+    const hh = String(h).padStart(2, '0');
+    const mm = String(m).padStart(2, '0');
+    return `${day} · ${hh}:${mm}`;
   }
 
   onCheckClick(ev: MouseEvent): void {

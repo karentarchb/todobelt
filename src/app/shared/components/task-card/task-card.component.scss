@@ -58,8 +58,17 @@
   min-width: 0;
 }
 
-.tb-task__title {
+.tb-task__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 4px;
+  min-width: 0;
+}
+
+.tb-task__title {
+  flex: 1 1 auto;
+  margin: 0;
   font-size: 15px;
   font-weight: 500;
   color: var(--tb-text-strong);
@@ -68,6 +77,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.tb-task__repeat {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 79, 163, 0.10);
+  color: var(--tb-rose);
+
+  ion-icon {
+    font-size: 11px;
+  }
 }
 
 .tb-task__meta {

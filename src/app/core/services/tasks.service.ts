@@ -10,6 +10,7 @@ import {
 import { TASK_TEMPLATES } from '../constants/task-templates.constants';
 import { AuthService } from './auth.service';
 import { FirestoreTasksService } from './firestore-tasks.service';
+import { NotificationService } from './notification.service';
 import { WalletService } from './wallet.service';
 
 export type ToggleReason =
@@ -32,6 +33,7 @@ export class TasksService {
   private readonly auth = inject(AuthService);
   private readonly fsTasks = inject(FirestoreTasksService);
   private readonly wallet = inject(WalletService);
+  private readonly notifications = inject(NotificationService);
 
   private readonly _tasks = signal<Task[]>([]);
   private readonly _loading = signal(false);
@@ -99,8 +101,14 @@ export class TasksService {
     };
     if (input.notes?.trim()) base.notes = input.notes.trim();
     if (input.dueAt) base.dueAt = input.dueAt;
+    if (input.recurrence) base.recurrence = input.recurrence;
 
-    await this.fsTasks.add(user.id, base);
+    const newId = await this.fsTasks.add(user.id, base);
+
+    // Schedule a system notification when the task has a time of day.
+    if (base.dueAt) {
+      void this.notifications.scheduleForTask({ ...base, id: newId } as Task);
+    }
   }
 
   async addFromTemplate(template: TaskTemplate): Promise<void> {
@@ -109,6 +117,7 @@ export class TasksService {
       category: template.category,
       priority: template.priority,
       dueAt: template.defaultTime ? this.todayAt(template.defaultTime) : undefined,
+      recurrence: template.recurrence,
     });
   }
 
@@ -128,13 +137,24 @@ export class TasksService {
       cleanPatch.reward = TASK_REWARD[patch.priority];
     }
     if (patch.dueAt !== undefined) cleanPatch.dueAt = patch.dueAt;
+    if (patch.recurrence !== undefined) cleanPatch.recurrence = patch.recurrence;
 
     await this.fsTasks.update(user.id, id, cleanPatch);
+
+    // Re-schedule the notification with the new dueAt / recurrence values.
+    const updated = this._tasks().find((t) => t.id === id);
+    if (updated) {
+      await this.notifications.cancelForTask(id);
+      if (cleanPatch.dueAt ?? updated.dueAt) {
+        void this.notifications.scheduleForTask({ ...updated, ...cleanPatch });
+      }
+    }
   }
 
   async remove(id: string): Promise<void> {
     const user = this.auth.user();
     if (!user) return;
+    await this.notifications.cancelForTask(id);
     await this.fsTasks.remove(user.id, id);
   }
 
@@ -164,6 +184,13 @@ export class TasksService {
     await this.fsTasks.update(user.id, id, patch);
 
     if (!nowDone) return { earned: 0, reason: 'undo' };
+
+    // Recurring task: cancel current notification and schedule the next
+    // instance so the user sees it tomorrow / next week. The completed
+    // task itself stays as-is for stats and the completed drawer.
+    if (task.recurrence) {
+      void this.cycleRecurrence(task);
+    }
 
     const reward = this.computeReward(task);
 
@@ -223,6 +250,34 @@ export class TasksService {
     }
 
     return { amount, reason: 'ok' };
+  }
+
+  /**
+   * Cancels the completed task's notification and creates the next
+   * occurrence as a fresh task — preserving title / category / time
+   * but shifting dueAt to tomorrow (daily) or next week (weekly).
+   */
+  private async cycleRecurrence(prev: Task): Promise<void> {
+    await this.notifications.cancelForTask(prev.id);
+    const nextDue = this.computeNextDue(prev.dueAt, prev.recurrence);
+    if (!nextDue) return;
+    await this.add({
+      title: prev.title,
+      ...(prev.notes ? { notes: prev.notes } : {}),
+      category: prev.category,
+      priority: prev.priority,
+      dueAt: nextDue,
+      recurrence: prev.recurrence,
+    });
+  }
+
+  private computeNextDue(dueAt: string | undefined, recurrence: Task['recurrence']): string | undefined {
+    if (!dueAt) return undefined;
+    const d = new Date(dueAt);
+    if (recurrence === 'daily') d.setDate(d.getDate() + 1);
+    else if (recurrence === 'weekly') d.setDate(d.getDate() + 7);
+    else return undefined;
+    return d.toISOString();
   }
 
   private todayAt(hhmm: string): string {

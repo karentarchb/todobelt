@@ -28,36 +28,6 @@
     </div>
   </section>
 
-  <!-- Quick-pick templates -->
-  <section class="tk-templates" aria-label="Plantillas rápidas">
-    <p class="tk-templates__hint">Toca para agregar al instante</p>
-    <div class="tk-templates__row">
-      @for (t of templates; track t.id) {
-        <button
-          type="button"
-          class="tk-template"
-          (click)="useTemplate(t)"
-        >
-          <span class="tk-template__icon" [style.color]="accentForCategory(t.category)">
-            <ion-icon [name]="iconForTemplate(t)" aria-hidden="true"></ion-icon>
-          </span>
-          <span class="tk-template__main">
-            <span class="tk-template__title">{{ t.title }}</span>
-            <span class="tk-template__meta">
-              @if (t.defaultTime) {
-                <span class="tk-template__time">{{ t.defaultTime }}</span>
-              }
-              @if (t.hint) {
-                <span class="tk-template__sep" aria-hidden="true">·</span>
-                <span class="tk-template__sub">{{ t.hint }}</span>
-              }
-            </span>
-          </span>
-        </button>
-      }
-    </div>
-  </section>
-
   <!-- Category filter chips -->
   @if (categories().length) {
     <section class="tk-catfilter" aria-label="Filtrar por categoría">
@@ -86,40 +56,10 @@
     </section>
   }
 
-  <!-- Status segments -->
-  <nav class="tk-segs" role="tablist">
-    <button
-      type="button"
-      class="tk-seg"
-      [class.tk-seg--active]="statusFilter() === 'all'"
-      (click)="setStatus('all')"
-      role="tab"
-    >
-      Todas <span class="tk-seg__count">{{ counts().all }}</span>
-    </button>
-    <button
-      type="button"
-      class="tk-seg"
-      [class.tk-seg--active]="statusFilter() === 'today'"
-      (click)="setStatus('today')"
-      role="tab"
-    >
-      Pendientes <span class="tk-seg__count">{{ counts().today }}</span>
-    </button>
-    <button
-      type="button"
-      class="tk-seg"
-      [class.tk-seg--active]="statusFilter() === 'done'"
-      (click)="setStatus('done')"
-      role="tab"
-    >
-      Hechas <span class="tk-seg__count">{{ counts().done }}</span>
-    </button>
-  </nav>
-
-  @if (visible().length) {
+  <!-- Pending tasks -->
+  @if (pendingTasks().length) {
     <div class="tk-list tb-stagger">
-      @for (t of visible(); track t.id) {
+      @for (t of pendingTasks(); track t.id) {
         <tb-task-card
           [task]="t"
           (toggle)="toggleTask($event)"
@@ -130,8 +70,8 @@
   } @else {
     <tb-empty-state
       icon="leaf-outline"
-      title="Nada por aquí"
-      description="Cuando agregues tareas, aparecerán en este espacio."
+      title="Sin pendientes"
+      description="Crea una nueva tarea o usa una plantilla cuando quieras avanzar."
     >
       <div class="tk-empty-cta">
         <tb-primary-button (pressed)="openAdd()">Crear tarea</tb-primary-button>
@@ -139,10 +79,48 @@
     </tb-empty-state>
   }
 
+  <!-- Completed drawer -->
+  @if (completedTasks().length) {
+    <section class="tk-drawer">
+      <button
+        type="button"
+        class="tk-drawer__toggle"
+        [class.tk-drawer__toggle--open]="drawerOpen()"
+        (click)="toggleDrawer()"
+        [attr.aria-expanded]="drawerOpen()"
+      >
+        <span class="tk-drawer__icon">
+          <ion-icon name="checkmark-done-outline" aria-hidden="true"></ion-icon>
+        </span>
+        <span class="tk-drawer__label">
+          Completadas
+          <span class="tk-drawer__count">{{ completedTasks().length }}</span>
+        </span>
+        <ion-icon
+          class="tk-drawer__chev"
+          [name]="drawerOpen() ? 'chevron-up-outline' : 'chevron-down-outline'"
+          aria-hidden="true"
+        ></ion-icon>
+      </button>
+
+      @if (drawerOpen()) {
+        <div class="tk-drawer__list tb-anim-fade">
+          @for (t of completedTasks(); track t.id) {
+            <tb-task-card
+              [task]="t"
+              (toggle)="toggleTask($event)"
+              (action)="openActions($event)"
+            ></tb-task-card>
+          }
+        </div>
+      }
+    </section>
+  }
+
   <div class="tk-tail"></div>
 </ion-content>
 
-<!-- ============ Add modal ============ -->
+<!-- ============ Add / Edit modal ============ -->
 <ion-modal
   [isOpen]="showAdd()"
   (didDismiss)="closeAdd()"
@@ -161,6 +139,38 @@
         </p>
       </header>
 
+      <!-- Templates: only when creating, not editing -->
+      @if (!editingId() && templates.length) {
+        <div class="tk-field">
+          <span class="tk-field__label">O elige una plantilla</span>
+          <div class="tk-templates__row">
+            @for (t of templates; track t.id) {
+              <button
+                type="button"
+                class="tk-template"
+                (click)="useTemplate(t)"
+              >
+                <span class="tk-template__icon" [style.color]="accentForCategory(t.category)">
+                  <ion-icon [name]="iconForTemplate(t)" aria-hidden="true"></ion-icon>
+                </span>
+                <span class="tk-template__main">
+                  <span class="tk-template__title">{{ t.title }}</span>
+                  <span class="tk-template__meta">
+                    @if (t.defaultTime) {
+                      <span class="tk-template__time">{{ t.defaultTime }}</span>
+                    }
+                    @if (t.hint) {
+                      <span class="tk-template__sep" aria-hidden="true">·</span>
+                      <span class="tk-template__sub">{{ t.hint }}</span>
+                    }
+                  </span>
+                </span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
       <label class="tk-field">
         <span class="tk-field__label">Título</span>
         <input
@@ -171,6 +181,48 @@
           autofocus
         />
       </label>
+
+      <label class="tk-field">
+        <span class="tk-field__label">Hora (opcional)</span>
+        <input
+          type="time"
+          class="tk-time"
+          [ngModel]="draftDueTime()"
+          (ngModelChange)="draftDueTime.set($event)"
+        />
+      </label>
+
+      <div class="tk-field">
+        <span class="tk-field__label">Repetir</span>
+        <div class="tk-chips tk-chips--3">
+          <button
+            type="button"
+            class="tk-chip tk-chip--prio"
+            [class.tk-chip--active]="draftRecurrence() === 'none'"
+            (click)="draftRecurrence.set('none')"
+          >
+            <span>Una vez</span>
+          </button>
+          <button
+            type="button"
+            class="tk-chip tk-chip--prio"
+            [class.tk-chip--active]="draftRecurrence() === 'daily'"
+            (click)="draftRecurrence.set('daily')"
+          >
+            <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
+            <span>Diaria</span>
+          </button>
+          <button
+            type="button"
+            class="tk-chip tk-chip--prio"
+            [class.tk-chip--active]="draftRecurrence() === 'weekly'"
+            (click)="draftRecurrence.set('weekly')"
+          >
+            <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
+            <span>Semanal</span>
+          </button>
+        </div>
+      </div>
 
       <div class="tk-field">
         <span class="tk-field__label">Categoría</span>
