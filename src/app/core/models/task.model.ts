@@ -33,3 +33,20 @@ export interface NewTaskInput {
   dueAt?: string;
   reward?: number;
 }
+
+/**
+ * Pre-loaded task suggestion the user can tap to add a real task quickly.
+ * Templates never appear in the user's task list — only on the picker UI.
+ */
+export interface TaskTemplate {
+  id: string;
+  title: string;
+  category: TaskCategory;
+  priority: TaskPriority;
+  /** Time of day (HH:mm) used to compute today's dueAt at insertion. */
+  defaultTime?: string;
+  /** Ionicon name override (otherwise the category icon is used). */
+  icon?: string;
+  /** Optional one-line context shown under the title. */
+  hint?: string;
+}

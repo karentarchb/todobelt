@@ -13,12 +13,39 @@ export const STORAGE_KEYS = {
   moodToday: 'tb.mood.today',
 } as const;
 
-/** Default reward (coins) earned per task priority */
+/**
+ * Coin reward earned per completed task by priority.
+ * Intentionally low — the design philosophy is that coins should be earned
+ * over real time, not farmed by spamming low-priority tasks.
+ */
 export const TASK_REWARD: Record<'low' | 'medium' | 'high', number> = {
-  low: 3,
-  medium: 6,
-  high: 10,
+  low: 2,
+  medium: 4,
+  high: 7,
 };
+
+/**
+ * Minimum minutes that must elapse between task creation and completion
+ * for any reward to be granted. Prevents instant "create and complete"
+ * cheesing — to earn coins you actually need to wait and do the task.
+ */
+export const MIN_ELAPSED_MINUTES: Record<'low' | 'medium' | 'high', number> = {
+  low: 10,
+  medium: 20,
+  high: 30,
+};
+
+/**
+ * If a task has a dueAt, completing within +/- this many minutes of it
+ * grants a small precision bonus (+1 coin). Encourages doing tasks on time.
+ */
+export const DUE_BONUS_MINUTES = 15;
+
+/**
+ * Hard cap on coins earned per calendar day. Once reached, further
+ * completions still mark tasks done but stop awarding coins until tomorrow.
+ */
+export const DAILY_COIN_CAP = 25;
 
 /** Categories meta */
 export const CATEGORY_META: Record<

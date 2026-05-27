@@ -2,6 +2,7 @@ export * from './storage.service';
 export * from './firebase.service';
 export * from './onboarding.service';
 export * from './auth.service';
+export * from './firestore-tasks.service';
 export * from './tasks.service';
 export * from './rewards.service';
 export * from './wallet.service';

@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 
 import { TasksService } from '@core/services/tasks.service';
-import { TaskCategory, TaskPriority } from '@core/models';
+import { TaskCategory, TaskPriority, TaskTemplate } from '@core/models';
 import { CATEGORY_META } from '@core/constants/app.constants';
+import { flashToggle } from '@core/helpers/toggle-feedback.helper';
 
 import { TaskCardComponent } from '@shared/components/task-card/task-card.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
@@ -28,6 +29,7 @@ type Filter = 'all' | 'today' | 'done';
 })
 export class TasksPage {
   private readonly tasksSvc = inject(TasksService);
+  private readonly toastCtrl = inject(ToastController);
 
   readonly filter = signal<Filter>('all');
   readonly showAdd = signal(false);
@@ -47,6 +49,16 @@ export class TasksPage {
     { key: 'high', label: 'Importante' },
   ];
 
+  readonly templates = this.tasksSvc.templates;
+  readonly todayEarned = this.tasksSvc.todayEarned;
+  readonly dailyCap = this.tasksSvc.dailyCap;
+
+  readonly capProgress = computed(() => {
+    const cap = this.dailyCap;
+    if (cap <= 0) return 0;
+    return Math.min(100, Math.round((this.todayEarned() / cap) * 100));
+  });
+
   readonly visible = computed(() => {
     const all = this.tasksSvc.tasks();
     switch (this.filter()) {
@@ -65,8 +77,28 @@ export class TasksPage {
     done: this.tasksSvc.completed().length,
   }));
 
-  toggleTask(id: string): void {
-    this.tasksSvc.toggle(id);
+  async toggleTask(id: string): Promise<void> {
+    const result = await this.tasksSvc.toggle(id);
+    await flashToggle(this.toastCtrl, result);
+  }
+
+  async useTemplate(template: TaskTemplate): Promise<void> {
+    await this.tasksSvc.addFromTemplate(template);
+    const toast = await this.toastCtrl.create({
+      message: `Agregada: ${template.title}`,
+      duration: 1600,
+      position: 'top',
+      cssClass: 'tb-toast',
+    });
+    await toast.present();
+  }
+
+  iconForTemplate(t: TaskTemplate): string {
+    return t.icon ?? CATEGORY_META[t.category].icon;
+  }
+
+  accentForCategory(category: TaskCategory): string {
+    return CATEGORY_META[category].accent;
   }
 
   openAdd(): void {
@@ -80,10 +112,10 @@ export class TasksPage {
     this.showAdd.set(false);
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     const title = this.draftTitle().trim();
     if (!title) return;
-    this.tasksSvc.add({
+    await this.tasksSvc.add({
       title,
       category: this.draftCategory(),
       priority: this.draftPriority(),

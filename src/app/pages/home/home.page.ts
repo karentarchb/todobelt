@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, ToastController } from '@ionic/angular';
 
 import { TasksService } from '@core/services/tasks.service';
 import { WalletService } from '@core/services/wallet.service';
@@ -8,6 +8,7 @@ import { MoodService } from '@core/services/mood.service';
 import { AuthService } from '@core/services/auth.service';
 import { RewardsService } from '@core/services/rewards.service';
 import { greetingForHour } from '@core/helpers/date.helper';
+import { flashToggle } from '@core/helpers/toggle-feedback.helper';
 
 import { CoinBadgeComponent } from '@shared/components/coin-badge/coin-badge.component';
 import { SectionHeaderComponent } from '@shared/components/section-header/section-header.component';
@@ -39,6 +40,7 @@ export class HomePage {
   private readonly auth = inject(AuthService);
   private readonly rewardsSvc = inject(RewardsService);
   private readonly router = inject(Router);
+  private readonly toastCtrl = inject(ToastController);
 
   readonly greeting = greetingForHour();
   readonly userName = computed(() => this.auth.user()?.name.split(' ')[0] ?? '');
@@ -60,8 +62,9 @@ export class HomePage {
     void this.moodSvc.setToday(key);
   }
 
-  toggleTask(id: string): void {
-    this.tasksSvc.toggle(id);
+  async toggleTask(id: string): Promise<void> {
+    const result = await this.tasksSvc.toggle(id);
+    await flashToggle(this.toastCtrl, result);
   }
 
   onClaim(id: string): void {
